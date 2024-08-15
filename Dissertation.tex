@@ -11,6 +11,13 @@
 \usepackage{verbatim}
 \usepackage{amsmath}
 \usepackage{amsthm}
+\usepackage{xcolor}
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+\hypersetup{
+    colorlinks = true,
+    linkbordercolor = {white},
+    citecolor = cyan
+}
 \usepackage{amssymb} % This package includes \mathbb
 
 \newtheorem{definition}{Definition}
@@ -36,10 +43,10 @@
 \include{Preamble/Lists}
 \include{Preamble/ChapterMods}
 
-% \include{Chapter1/Chapter1}
-% \include{Chapter2/Chapter2}
+\include{Chapter1/Chapter1}
+\include{Chapter2/Chapter2}
 \include{Chapter3/Chapter3}
-% \include{Chapter4/Chapter4}
+\include{Chapter4/Chapter4}
 % \include{Chapter5/Chapter5}
 % \include{Chapter6/Chapter6}
 % \include{Chapter7/Chapter7}

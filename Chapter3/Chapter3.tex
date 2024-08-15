@@ -2,9 +2,40 @@
 
 \chapter{Background}
 
+% MDPs
+\section{Markov Decision Process (MDP)}
+
+A finite Markov Decision Process (MDP) is a transition system defined as a 5-tuple $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$, where $\mathcal{S}$ is a finite set of states, $\mathcal{A}$ is a finite set of actions, $\mathcal{P}(s'|s, a)$ is the probability of transitioning from state $s \in S$ to state $s' \in S$, $\mathcal{R} : S \times A \rightarrow R$ is the reward function , and $\gamma \in [0, 1)$ is a discount factor.
+
+% Bisimulation and Equivalence Relation
+
+Initially introduced in the field of concurrency theory, \textbf{bisimulation} \cite{li2006towards, abate2024bisimulation, baier2008principles} is an equivalence relation between states of a transition system (e.g. MDP) that preserves the branching structure of the system, and which thus can simulate each other in a stepwise manner. Two states are bisimilar if they can simulate each other's behavior, thereby a bisimulation serves as a form of state abstraction that groups states \(s_i\) and \(s_j\) that are 'behaviorally equivalent'. In fact, their optimal value functions are equal, \(V^\ast(s_i) = V^\ast(s_j)\)
+
+\textbf{Definition 1.} (Givan et al. \cite{givan2003equivalence}). Given an MDP $\mathcal{M}$, an equivalence relation $B$ between states is a \textbf{bisimulation relation} if, for all states $s_i, s_j \in \mathcal{S}$ that are equivalent under $B$ the following conditions hold:
+% \begin{enumerate}
+%     \item $\mathcal{R}\left(s_i, a\right) =\mathcal{R}\left(s_j, a\right) \quad \forall a \in \mathcal{A},$
+%     \item $\mathcal{P}\left(G \mid s_i, a\right) =\mathcal{P}\left(G \mid s_j, a\right) \quad \forall a \in \mathcal{A}, \quad \forall G \in \mathcal{S}_B,$
+% \end{enumerate}
+\begin{equation}
+\begin{aligned}
+\mathcal{R}\left(s_i, a\right) & =\mathcal{R}\left(s_j, a\right) & & \forall a \in \mathcal{A}, \\
+\mathcal{P}\left(C \mid s_i, a\right) & =\mathcal{P}\left(C \mid s_j, a\right) & & \forall a \in \mathcal{A}, \quad \forall C \in \mathcal{S}_B,
+\end{aligned}
+\end{equation}
+
+where $\mathcal{S}_B$ is the partition of $\mathcal{S}$ under the relation $B$, and $\mathcal{P}(C|s, a) = \sum_{s' \in C} \mathcal{P}(s'|s, a)$.
+
+%According to this concept, 
+Two states $s_i, s_j \in S$ are \textbf{bisimilar} if there exists a bisimulation relation $B$ such that $(s_i, s_j) \in B$; consequently, their optimal value functions are equal, \(V^\ast(s_i) = V^\ast(s_j)\).
+
+
+
+
+That is, any two states with distance 0 will be collapsed onto the same equivalence class.
+
+
 
 \section{Equivalence Relation}
-
 
 \begin{definition}[Equivalence Relation]
 Let $X$ be a set. An equivalence relation on $X$ is a subset $R \subseteq X \times X$ that satisfies the following three properties:
@@ -23,4 +54,88 @@ In mathematics, an equivalence relation is a binary relation that is reflexive, 
     \item If $a=b$ and $b=c$, then $a=c$ (transitive). 
 \end{enumerate}
 
-\subsection{}
+% Bisimulation metric
+
+% On-policy Bisimulation
+
+\section{On-policy bisimulation}
+
+\textbf{Definition 2.} (Castro \cite{castro2020scalable}). Given an MDP $\mathcal{M}$, an equivalence relation $B^\pi$ between states is a $\pi$-\textbf{bisimulation relation} if, for all states $s_i, s_j \in \mathcal{S}$ that are equivalent under $B^\pi$ the following conditions hold:
+% \begin{enumerate}
+%     \item $\mathcal{R}\left(s_i, a\right) =\mathcal{R}\left(s_j, a\right) \quad \forall a \in \mathcal{A},$
+%     \item $\mathcal{P}\left(G \mid s_i, a\right) =\mathcal{P}\left(G \mid s_j, a\right) \quad \forall a \in \mathcal{A}, \quad \forall G \in \mathcal{S}_B,$
+% \end{enumerate}
+
+%\mathcal{R}\left(s_i, a\right) & =\mathcal{R}\left(s_j, a\right) & & \forall a \in \mathcal{A},
+
+\begin{equation}
+\begin{aligned}
+\mathcal{R}_{s_i}^\pi & = \mathcal{R}_{s_j}^\pi
+ \\
+\mathcal{P}_{s_i}^\pi\left(C \right) & =\mathcal{P}_{s_j}^\pi\left(C\right) \quad \forall C \in \mathcal{S}_B,
+\end{aligned}
+\end{equation}
+
+where $\mathcal{S}_{B^\pi}$ is the partition of $\mathcal{S}$ under the relation $B^\pi$, and
+
+\begin{equation}
+\begin{aligned}
+\mathcal{R}_s^\pi & :=\sum_a \pi(a \mid s) \mathcal{R}(s, a) \\
+\forall C \in \mathcal{S}_{B^\pi}, \mathcal{P}_s^\pi(C) & :=\sum_a \pi(a \mid s) \sum_{s^{\prime} \in C} P( s^{\prime} \mid s, a)
+\end{aligned}
+\end{equation}
+
+%According to this concept, 
+Two states $s_i, s_j \in S$ are $\pi$-\textbf{bisimilar} if there exists a $\pi$-bisimulation relation $B^\pi$ such that $(s_i, s_j) \in B^\pi$.
+
+% On-policy Bisimulation metric
+
+\section{Bisimulation metric}
+
+Extending the work of Desharnais et al. (1999) for labeled Markov processes, Ferns, Panangaden, and Precup (2004) generalized the notion of MDP bisimulation relations to metrics, yielding a smoother notion of similarity than equivalence relations. 
+
+
+Let $\mathcal{M(S)}= \{d \in [0, \infty)^{\mathcal{S} \times \mathcal{S}} : d \text{ symmetric and satisfies the triangle inequality}\}$ be the set of all pseudometrics on $S$. A pseudometric $d \in \mathcal{M}$ induces an equivalence relation $E_d := \{(s, t)|d(s, t) = 0\}$. \newline
+
+\textbf{Definition 3.} (Castro \cite{castro2020scalable} Theorem 2) A $\pi$-bisimulation metric $d^\sim$ is the unique fixed-point of the operator $T^\pi : \mathcal{M(S)} \rightarrow \mathcal{M(S)}$, where 
+\begin{equation}
+    T^\pi_k(d)(s_i, s_j) = |\mathcal{R}^\pi_{s_i} - \mathcal{R}^\pi_{s_j}| + \gamma \mathcal{W}_d(\mathcal{P}^\pi_{s_i},\mathcal{P}^\pi_{s_j}) 
+\end{equation}
+
+where $\mathcal{W}_d$ corresponds to the Kantorovich distance (also known as Wasserstein distance) over the set of distributions $\mathcal{P}(\mathcal{S})$ with based distance $d$, defined as
+
+\begin{equation}
+W_d\left(\mu, \mu^{\prime}\right)=\min _{\substack{\left(Z, Z^{\prime}\right) \\ Z \sim \mu, Z^{\prime} \sim \nu^{\prime}}} \mathbb{E}\left[d\left(Z, Z^{\prime}\right)\right]
+\end{equation}
+
+where $u, u'\in \mathcal{P}(\mathcal{S})$, and $(Z,Z')$ denotes all the possible couplings.
+
+The operator $T^\pi_k(d)$ works as standard operators in dynamic programming (e.g. value iteration), which will eventually converge to a fixed point $d^\sim$ up to an accuracy $\delta$, where $T^\pi_K(d)$ maps effectively $\mathcal{M}(S)$ into itself, and $T^\pi_K(d) = d^\sim : S \times S \rightarrow \mathbb{R}$. Then, let an initial estimate $d_0$
+
+$$d_0 \rightarrow T^\pi_1(d_0) = d_1 \rightarrow T^\pi_2(d_1) = d_2 \cdots \rightarrow d^\sim$$
+
+\begin{equation}
+    T^\pi_k(d)(s_i, s_j) = |\mathcal{R}^\pi_{s_i} - \mathcal{R}^\pi_{s_j}| + \gamma d(\mathcal{N}(s_i,\pi(s_i),\mathcal{N}(s_j,\pi(s_j))) 
+\end{equation}
+
+where $\mathcal{N}$ corresponds to the next state, which in a deterministic has $P(\mathcal{N}(s,\pi(S)) = 1$, and $\pi(s)$ is the action taken by the current policy.
+
+
+
+% State Abstraction
+
+% Independent Couplings
+
+% Learning Abstraction and MICO metric
+
+% Experience Replay
+
+% Prioritized Experience Replay
+
+
+
+
+
+
+
+

@@ -1,4 +1,44 @@
 % !TEX root =  ../Dissertation.tex
 
-\chapter{Chapter Title}
+\chapter{Methodology}
+
+This section depicts the methodology used for the present work by walking through a motivating example, and defining the method used afterwards.
+
+% Example????
+
+\section{A Motivating Example: Grid World}
+
+The Grid World is a simple toy example (see Figure \ref{}, with the following properties in terms of a MDP:
+
+\begin{itemize}
+    \item The state space is discrete an given by $ s \in S : \{0,n\} \times \{0,m\}$, all the positions $(x,y)$ of the agent in the grid.
+    \item The actions space is discrete given by $a \in A: \{0,3\}$, which corresponds to four possible directions: down (0), right (1), up (2) and left (4).
+    \item The transition are deterministic and only restricted to adjacent cells, such that the agent will move to any adjacent cell with probability 1 $P(s,a) = 1$ (except if this is a wall then $P(s,a) = 0$).
+    \item The rewards are binary and sparse, with the immediate reward always being zero unless the agent reaches the goal (G), in which case it becomes 1.
+    \item And the discount factor $\gamma$ is 0.99
+\end{itemize}
+
+According to Definiton \ref{}, a bisimulation must hold two constraints the Reward Equivalence and Transition Probability Equivalence. 
+
+
+
+In the Grid World, the Reward Equivalence holds by
+
+$$$$
+
+
+\subsection{Bisimulation in a Grid World}
+
+\subsection{On-policy Bisimulation in a Grid World}
+
+\subsection{On-policy Bisimulation metric in a Grid World}
+
+%\subsection{On-policy MICO metric justification}
+
+\section{Bisimulation Prioritized Experience Replay}
+
+\subsection{All vs All Bisimulaiton Priority}
+\subsection{Current vs Next Bisimulation Priority}
+
+
 
