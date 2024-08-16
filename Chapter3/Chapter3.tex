@@ -1,141 +1,49 @@
 % !TEX root =  ../Dissertation.tex
 
-\chapter{Background}
+\chapter{Literature Review}
 
-% MDPs
-\section{Markov Decision Process (MDP)}
+\section{Non-Uniform Sampling Experience Replays}
 
-A finite Markov Decision Process (MDP) is a transition system defined as a 5-tuple $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$, where $\mathcal{S}$ is a finite set of states, $\mathcal{A}$ is a finite set of actions, $\mathcal{P}(s'|s, a)$ is the probability of transitioning from state $s \in S$ to state $s' \in S$, $\mathcal{R} : S \times A \rightarrow R$ is the reward function , and $\gamma \in [0, 1)$ is a discount factor.
+PER \cite{schaul2015prioritized} is by far the most relevant non-uniformly sampling method, which samples visited experiences proportional to the absolute TD errors efficiently reducing converges time. Nonetheless, after these promising results, multiple attempts to improve and control even more the non-uniform sampling has been done to address different challenges such as: sparsing rewards assignation \cite{andrychowicz2017hindsight}, ..., ....,. This large variety of option makes complex and unclear to discern between different and complementary methods. In such way, the following proposed categorization looks to capture the main nuances of the variety of methodologies, and provide a guidelines to explore experiences replay methods, which exists currently in the literature. The categorization is as follows: Priority Substitution, Priority Reweighing, and Auxiliary Learnable Mechanisms.
 
-% Bisimulation and Equivalence Relation
+\subsection{Priority Substitution}
 
-Initially introduced in the field of concurrency theory, \textbf{bisimulation} \cite{li2006towards, abate2024bisimulation, baier2008principles} is an equivalence relation between states of a transition system (e.g. MDP) that preserves the branching structure of the system, and which thus can simulate each other in a stepwise manner. Two states are bisimilar if they can simulate each other's behavior, thereby a bisimulation serves as a form of state abstraction that groups states \(s_i\) and \(s_j\) that are 'behaviorally equivalent'. In fact, their optimal value functions are equal, \(V^\ast(s_i) = V^\ast(s_j)\)
+ Even though PER is considered a state-of-the-art method and is widely used in various reinforcement learning algorithms as a mechanism to alleviate long training loops, its efficiency declines in challenging scenarios with sparse rewards, where the reward signal only appears after long trajectories. To address this issue, Andrychowicz et al. \cite{andrychowicz2017hindsight} proposed a hindsight method using universal policies, known as \textbf{Hindsight Experience Replay (HER)}. This method accepts both a current state and a goal state, encouraging the experience replay to sample experiences in hindsight; in other words, using a different goal on the fly than the one the agent was originally trying to achieve in the episode. HER effectively handles sparse and binary rewards without requiring additional reward manipulation. Our method, in contrast, does not require defining different goals on the fly. Instead, by learning a bisimulation metric dynamically (considering both immediate rewards and transitions), it approximates the behavioral similarity of theoretically all states in the environment, thereby addressing the problem of sparse rewards without the need for extra reward manipulation or goal-based policies.
 
-\textbf{Definition 1.} (Givan et al. \cite{givan2003equivalence}). Given an MDP $\mathcal{M}$, an equivalence relation $B$ between states is a \textbf{bisimulation relation} if, for all states $s_i, s_j \in \mathcal{S}$ that are equivalent under $B$ the following conditions hold:
-% \begin{enumerate}
-%     \item $\mathcal{R}\left(s_i, a\right) =\mathcal{R}\left(s_j, a\right) \quad \forall a \in \mathcal{A},$
-%     \item $\mathcal{P}\left(G \mid s_i, a\right) =\mathcal{P}\left(G \mid s_j, a\right) \quad \forall a \in \mathcal{A}, \quad \forall G \in \mathcal{S}_B,$
-% \end{enumerate}
-\begin{equation}
-\begin{aligned}
-\mathcal{R}\left(s_i, a\right) & =\mathcal{R}\left(s_j, a\right) & & \forall a \in \mathcal{A}, \\
-\mathcal{P}\left(C \mid s_i, a\right) & =\mathcal{P}\left(C \mid s_j, a\right) & & \forall a \in \mathcal{A}, \quad \forall C \in \mathcal{S}_B,
-\end{aligned}
-\end{equation}
+Subsequent efforts have studied the retention and sampling capabilities of experience replay simultaneously; focusing on how many experiences to maintain in and sample from the experience replay.  Particularly, de Bruim et al. \cite{de2018experience} has explored a concept of \textbf{experience selection}, which address both retention and sampling by using different proxies to define priorities based on the immediate and long-term utility. However, they only provided implementation guidelines because the proxies can be highly sensible to the task at hand. In contrast, our method is based on an strong mathematical formalism (bisimulation \cite{li2006towards}), applicable to any discrete or stochastic environment, without the need for hand-engineering proxies.
 
-where $\mathcal{S}_B$ is the partition of $\mathcal{S}$ under the relation $B$, and $\mathcal{P}(C|s, a) = \sum_{s' \in C} \mathcal{P}(s'|s, a)$.
+Alternatively, Dopamine Rainbow \cite{hessel2018rainbow} evaluates the performance of six extensions of DQN algorithms, empirically demonstrating the significant importance of prioritized replay and \textbf{multi-step targets} in enhancing DQN performance. Unlike single-step targets in temporal difference (TD) error, a multi-step target considers n steps with intermediate actions determined by the behavioral policy. This approach is effectively used to substitute single-step td-errors priorities for multi-step td-error priorities to train DQN algorithms. The multi-step bootstrap target \cite{sutton1988learning, sutton2018reinforcement} efficiently adjusts the bias-variance trade-off, enabling the rapid propagation of newly observed rewards to previously visited states. Fedus et al. \cite{fedus2020revisiting} rigorously studied the effect of various components of experience replay on the DQN algorithm, revealing that multi-step targets are crucial for leveraging replay buffers with large capacities, despite the significant degree of off-policyness they may introduce. Our method, BPER, controls the influence on priority by weighting the use of single-step temporal difference (TD) error and the bisimulation metric with a hyperparameter. Although our method could potentially overlook TD error in extreme cases where only the bisimulation metric is selected (maximum weight equal 1), single-step targets are still necessary for optimizing the main reinforcement learning objective. Our approach does not impose any constraints on the use of n-step targets for both Q-learning and priority, and they can be included to enhance the performance of a DQN algorithm. Instead, our method functions as a reweighting mechanism between TD errors and the bisimulation metric.
 
-%According to this concept, 
-Two states $s_i, s_j \in S$ are \textbf{bisimilar} if there exists a bisimulation relation $B$ such that $(s_i, s_j) \in B$; consequently, their optimal value functions are equal, \(V^\ast(s_i) = V^\ast(s_j)\).
+% Me quede aqui
+% Recuerda en el paper de PER hay algunas citas que podrian ser utiles solo usa una mas
 
 
+Density-based Prioritization: This method focuses on maintaining a diverse set of experiences in the replay buffer by ensuring that experiences are sampled from low-density regions of the state space. This helps in covering the state space more uniformly.
+Likelihood-free Importance Weighting: Sinha et al. (2022) introduced a method that reweights priorities by estimating the likelihood-free density ratio between on-policy and off-policy experiences.
+
+% I'm here
+
+\subsection{Priority Reweighing}
+
+Finally, we analyze methods that aim to reweigh priorities more efficiently. Kumar et al. \cite{kumar2020discor}  propose a corrective feedback method, reweighing samples by adjusting the TD-error target value with an estimated target value error, mitigating error accumulation. Sun et al. \cite{sun2020attentive} propose Attention Experience Replay (AER), implicitly assigning high priorities to transitions containing frequently visited states. Liu et al. \cite{liu2021regret} propose an optimal prioritization strategy based on regret minimization, indicating transitions with higher hindsight TD error should be prioritized. This work implements two methods: ReMERN, learning an error network to assign priorities, and ReMERT, exploiting temporal state ordering without an additional neural network. Concurrently, SUNRISE \cite{lee2021sunrise} reweighs target Q-values based on uncertainty estimates from a Q-ensemble, improving signal-to-noise in Q-updates and stabilizing learning. Lastly, Sinha et al. \cite{sinha2022experience}  propose a reweighing technique, reassigning priorities by the likelihood-free density ratio between on-policy and off-policy experiences.
 
 
-That is, any two states with distance 0 will be collapsed onto the same equivalence class.
+\subsection{Auxiliary Mechanism}
+% \subsection{Model-based Sampling}
+
+Additional methods focus on incorporating auxiliary mechanisms to reduce dependence on priority during sampling. Zha et al. \cite{zha2019experience} include an additional replay policy learned to filter irrelevant experiences and use priorities only on relevant ones. Similarly, Pan et al. \cite{pan2022understanding} propose a model-based Stochastic Gradient Langevin Dynamics (SGLD) sampling method, producing hypothetical experiences using the current policy and concatenating them with uniformly sampled experiences from an ER. SGLD addresses outdated priorities and insufficient sample space coverage. In contrast, by learning abstractions, our method does not require an additional replay policy learning, complex world model, or hypothetical state tracking. Instead, our method reduces training complexity by learning lower-dimensional state representations, which are organized by behavioral quality in a latent space.
 
 
+Our work aligns with methods that reweigh priorities but also includes an auxiliary mechanism to calculate bisimulation metrics. Specifically, our method implicitly learns a bisimulation (and bisimulation metric) by learning state abstractions with an encoder neural network. This network is updated with an objective loss function, which encourages to keep behaviorally similar states closer together and behaviorally dissimilar states farther apart in a latent space. The bisimulation metric defines a behavioral similarity distance, which will be used to reweigh priorities, encouraging more diverse sampling.
 
-\section{Equivalence Relation}
+\section{Bisimulation Metrics}
 
-\begin{definition}[Equivalence Relation]
-Let $X$ be a set. An equivalence relation on $X$ is a subset $R \subseteq X \times X$ that satisfies the following three properties:
-\begin{enumerate}
-    \item \textbf{Reflexivity}: For all $x \in X$, $(x,x) \in R$;
-    \item \textbf{Symmetry}: For all $x, y \in X$, if $(x,y) \in R$ then $(y,x) \in R$;
-    \item \textbf{Transitivity}: For all $x, y, z \in X$, if $(x,y) \in R$ and $(y,z) \in R$ then $(x,z) \in R$.
-\end{enumerate}
-\end{definition}
+% An explanation of the overview of bisimulation metric, but the detailed understanding of what it needed to this thesis is in background, which was written before so mentioning this as other examples 
 
-In mathematics, an equivalence relation is a binary relation that is reflexive, symmetric and transitive. A simpler example is equality. 
-
-\begin{enumerate}
-    \item Any number $a$ is equal to itself (reflexive).
-    \item  If $a=b$, then $b=a$ (symmetric).
-    \item If $a=b$ and $b=c$, then $a=c$ (transitive). 
-\end{enumerate}
-
-% Bisimulation metric
-
-% On-policy Bisimulation
-
-\section{On-policy bisimulation}
-
-\textbf{Definition 2.} (Castro \cite{castro2020scalable}). Given an MDP $\mathcal{M}$, an equivalence relation $B^\pi$ between states is a $\pi$-\textbf{bisimulation relation} if, for all states $s_i, s_j \in \mathcal{S}$ that are equivalent under $B^\pi$ the following conditions hold:
-% \begin{enumerate}
-%     \item $\mathcal{R}\left(s_i, a\right) =\mathcal{R}\left(s_j, a\right) \quad \forall a \in \mathcal{A},$
-%     \item $\mathcal{P}\left(G \mid s_i, a\right) =\mathcal{P}\left(G \mid s_j, a\right) \quad \forall a \in \mathcal{A}, \quad \forall G \in \mathcal{S}_B,$
-% \end{enumerate}
-
-%\mathcal{R}\left(s_i, a\right) & =\mathcal{R}\left(s_j, a\right) & & \forall a \in \mathcal{A},
-
-\begin{equation}
-\begin{aligned}
-\mathcal{R}_{s_i}^\pi & = \mathcal{R}_{s_j}^\pi
- \\
-\mathcal{P}_{s_i}^\pi\left(C \right) & =\mathcal{P}_{s_j}^\pi\left(C\right) \quad \forall C \in \mathcal{S}_B,
-\end{aligned}
-\end{equation}
-
-where $\mathcal{S}_{B^\pi}$ is the partition of $\mathcal{S}$ under the relation $B^\pi$, and
-
-\begin{equation}
-\begin{aligned}
-\mathcal{R}_s^\pi & :=\sum_a \pi(a \mid s) \mathcal{R}(s, a) \\
-\forall C \in \mathcal{S}_{B^\pi}, \mathcal{P}_s^\pi(C) & :=\sum_a \pi(a \mid s) \sum_{s^{\prime} \in C} P( s^{\prime} \mid s, a)
-\end{aligned}
-\end{equation}
-
-%According to this concept, 
-Two states $s_i, s_j \in S$ are $\pi$-\textbf{bisimilar} if there exists a $\pi$-bisimulation relation $B^\pi$ such that $(s_i, s_j) \in B^\pi$.
-
-% On-policy Bisimulation metric
-
-\section{Bisimulation metric}
-
-Extending the work of Desharnais et al. (1999) for labeled Markov processes, Ferns, Panangaden, and Precup (2004) generalized the notion of MDP bisimulation relations to metrics, yielding a smoother notion of similarity than equivalence relations. 
-
-
-Let $\mathcal{M(S)}= \{d \in [0, \infty)^{\mathcal{S} \times \mathcal{S}} : d \text{ symmetric and satisfies the triangle inequality}\}$ be the set of all pseudometrics on $S$. A pseudometric $d \in \mathcal{M}$ induces an equivalence relation $E_d := \{(s, t)|d(s, t) = 0\}$. \newline
-
-\textbf{Definition 3.} (Castro \cite{castro2020scalable} Theorem 2) A $\pi$-bisimulation metric $d^\sim$ is the unique fixed-point of the operator $T^\pi : \mathcal{M(S)} \rightarrow \mathcal{M(S)}$, where 
-\begin{equation}
-    T^\pi_k(d)(s_i, s_j) = |\mathcal{R}^\pi_{s_i} - \mathcal{R}^\pi_{s_j}| + \gamma \mathcal{W}_d(\mathcal{P}^\pi_{s_i},\mathcal{P}^\pi_{s_j}) 
-\end{equation}
-
-where $\mathcal{W}_d$ corresponds to the Kantorovich distance (also known as Wasserstein distance) over the set of distributions $\mathcal{P}(\mathcal{S})$ with based distance $d$, defined as
-
-\begin{equation}
-W_d\left(\mu, \mu^{\prime}\right)=\min _{\substack{\left(Z, Z^{\prime}\right) \\ Z \sim \mu, Z^{\prime} \sim \nu^{\prime}}} \mathbb{E}\left[d\left(Z, Z^{\prime}\right)\right]
-\end{equation}
-
-where $u, u'\in \mathcal{P}(\mathcal{S})$, and $(Z,Z')$ denotes all the possible couplings.
-
-The operator $T^\pi_k(d)$ works as standard operators in dynamic programming (e.g. value iteration), which will eventually converge to a fixed point $d^\sim$ up to an accuracy $\delta$, where $T^\pi_K(d)$ maps effectively $\mathcal{M}(S)$ into itself, and $T^\pi_K(d) = d^\sim : S \times S \rightarrow \mathbb{R}$. Then, let an initial estimate $d_0$
-
-$$d_0 \rightarrow T^\pi_1(d_0) = d_1 \rightarrow T^\pi_2(d_1) = d_2 \cdots \rightarrow d^\sim$$
-
-\begin{equation}
-    T^\pi_k(d)(s_i, s_j) = |\mathcal{R}^\pi_{s_i} - \mathcal{R}^\pi_{s_j}| + \gamma d(\mathcal{N}(s_i,\pi(s_i),\mathcal{N}(s_j,\pi(s_j))) 
-\end{equation}
-
-where $\mathcal{N}$ corresponds to the next state, which in a deterministic has $P(\mathcal{N}(s,\pi(S)) = 1$, and $\pi(s)$ is the action taken by the current policy.
-
-
-
-% State Abstraction
-
-% Independent Couplings
-
-% Learning Abstraction and MICO metric
-
-% Experience Replay
-
-% Prioritized Experience Replay
-
-
-
-
-
-
-
-
+\subsection{Dynamical Programming Methods}
+\subsection{Deep Learning Methods}
+\subsection{Kernel Methods}
+\section{Learning State Abstractions}
+\subsection{Reconstructions Abstractions}
+\subsection{Contrastive Abstractions}
+\subsection{Behavioral Abstractions}
