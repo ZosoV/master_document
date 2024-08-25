@@ -8,13 +8,13 @@ This section depicts the methodology used for the present work by walking throug
 
 \section{A Motivating Example: Grid World}
 
-The Grid World is a simple toy example (see Figure \ref{}, with the following properties in terms of a MDP:
+The Grid World is a simple toy example (see Figure \ref{}), with the following properties in terms of a MDP (See Section \ref{sec:mdp_definition}):
 
 \begin{itemize}
     \item The state space is discrete an given by $ s \in S : \{0,n\} \times \{0,m\}$, all the positions $(x,y)$ of the agent in the grid.
     \item The actions space is discrete given by $a \in A: \{0,3\}$, which corresponds to four possible directions: down (0), right (1), up (2) and left (4).
-    \item The transition are deterministic and only restricted to adjacent cells, such that the agent will move to any adjacent cell with probability 1 $P(s,a) = 1$ (except if this is a wall then $P(s,a) = 0$).
-    \item The rewards are binary and sparse, with the immediate reward always being zero unless the agent reaches the goal (G), in which case it becomes 1.
+    \item The transition are deterministic and only restricted to adjacent cells, such that the agent will move to any adjacent cell with probability 1 $P(s,a) = 1$ (except if this is a wall when it keeps in the same state, or transition to the same state with probability 1).
+    \item The rewards are binary and sparse, with the immediate reward always being -1 unless the agent reaches the goal (G), in which case it becomes 200.
     \item And the discount factor $\gamma$ is 0.99
 \end{itemize}
 
@@ -42,4 +42,7 @@ $$$$
 \subsection{Priority Strategies}
 
 
+\section{Experimentation Setup}
 
+\subsection{Experiments and Environments}
+\subsection{TorchRL}

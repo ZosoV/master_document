@@ -4,12 +4,13 @@
 
 \section{Reinforcement Learning}
 
-Reinforcement Learning (RL) \cite{sutton2018reinforcement} is an artificial intelligence learning paradigm, which, along with supervised and unsupervised learning, constitutes one of the three main approaches in machine learning. What distinguishes Reinforcement Learning from other approaches is that the learning occurs through a trial-and-error process, where an \textbf{agent} receives \textbf{reward} signals (positive or negative) from an \textbf{environment}, leading to a focus on maximizing long-term positive rewards. The key elements, the agent and the environment, interact iteratively: the agent observes the state of the environment, takes an action accordingly, and receives a reward along with the next state from the environment (see Figure \ref{}). The primary goal of an RL agent is to maximize the accumulated reward, also known as the \textbf{return}. In this section, we will formally define these concepts.
+Reinforcement Learning (RL) \cite{sutton2018reinforcement} is an artificial intelligence learning paradigm, which, along with supervised and unsupervised learning, constitutes one of the three main approaches in machine learning. What distinguishes Reinforcement Learning from other approaches is that the learning occurs through a trial-and-error process, where an \textbf{agent} receives \textbf{reward} signals (positive or negative) from an \textbf{environment}, leading to a focus on maximizing long-term positive rewards. The key elements, the agent and the environment, interact iteratively: the agent observes the state of the environment, takes an action accordingly, and receives a reward along with the next state from the environment (see Figure \ref{}). The primary goal of an RL agent is to maximize the cumulative reward, also known as the \textbf{return}. In this section, we will formally define these concepts.
 
 % MDPs
 \subsection{Markov Decision Process (MDP)}
+\label{sec:mdp_definition}
 
-Markov Decision Processes (MDP) provide the formal framework upon which most reinforcement learning algorithms are built. A \textbf{finite} MDP is an state transition system defined as a 5-tuple $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$, where 
+\textbf{Markov Decision Processes} (MDP) provide the formal framework upon which most reinforcement learning algorithms are built. A \textbf{finite} MDP is an state transition system defined as a 5-tuple $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$, where 
 
 \begin{itemize}
     \item $\mathcal{S}$ is a finite set of states,
@@ -19,21 +20,275 @@ Markov Decision Processes (MDP) provide the formal framework upon which most rei
     \item and $\gamma \in [0, 1)$ is a discount factor.
 \end{itemize}
 
-For notational convenience, we define $P^a_s \in \mathcal{P}(S)$ to represent the next-state distribution for a given state-action pair $(s, a)$, and $r^a_s$ to denote the associated immediate reward. Note not get confused with $P^a_s \neq P(s'|s, a)$, the former represents a distribution and the second one a probability value.
+For convenience, we define the following notation that we are going to use interchangeable. The next-state distribution for a given state-action pair $(s, a)$ is defined as,
+$$P^a_s = P(\cdot|s, a) \in \mathcal{P}(S)$$, and the associated immediate reward 
+$$r^a_s = \mathcal{R}(s,a)$$ 
+Note not get confused with $P^a_s \neq P(s'|s, a)$, the former represents a distribution and the second one a probability value.
 
-For reference, the MDP can be visualized as a graph, as shown in Figure \ref{}, where the interaction of all these components is depicted. Intuitively, the reinforcement learning (RL) loop illustrated in Figure \ref{} can be understood as a trial-and-error process that induces an MDP. For example, if the states are represented by image frames from a simulator, our MDP will be described by \ref{}.
+For reference, a MDP can be visualized as a graph, as shown in Figure \ref{}, where the interaction between all components is illustrated. Intuitively, the reinforcement learning (RL) loop depicted in Figure \ref{} can be understood as a trial-and-error process that induces an MDP. For instance, if the states are represented by image frames from a simulator, the corresponding MDP would be described by \ref{}. A MDP intuitively could be understood as the environment, while the agent decision-making mechanism is defined by a policy.
 
-The previous notion defines what intuitively could be understand as the environment, while the agent decision-making mechanism is defined by a policy $\pi$. A \textbf{policy} is a mapping from states to distributions over actions (or just actions for discrete policies) $\pi \in \mathcal{P}(A)^x$.
+A \textbf{policy} is a mapping from states to distributions over actions (or just actions for discrete policies) $\pi \in \mathcal{P}(A)^x$. It describes the agent actions in a given state, and can be stochastic to sampled actions as
+\begin{equation}
+    a_t \sim \pi(\cdot|s_t)
+\end{equation}
+, or deterministic defined as 
+\begin{equation}
+a_t = \pi(s_t)    
+\end{equation} 
 
 \subsection{Trajectories, Return, and Value Functions}
 
+The iterative interaction of an agent in the environment (see Figure \ref{}) is depicted in a \textbf{trajectory}\footnote{The trajectory, return and value functions explanations were based on \href{https://spinningup.openai.com/en/latest/spinningup/rl_intro.html}{OpenAI Spinning Up}} (also called rollout or \textbf{episode}), which is a sequence of states and actions.
+$$\tau = (s_0, a_0, s_1, a_1, \dots )$$
 
+where a \textbf{transition} is what happen between state $s_t$ and state $s_{t+1}$, in a deterministic transition as 
+$$s_{t+1} = f(s_t, a_t)$$, 
+or a stochastic transition $$s_{t+1} \sim P(\cdot | s_t, a_t)$$, where the action come from the policy.
+
+The \textbf{reward} function $\mathcal{R}$ in the current work depends only on the current state and action taken, such that
+$$r_t = r^{a_t}_{s_t} = \mathcal{R}(s_t,a_t)$$
+
+The \textbf{return} $\mathcal{R}(\tau)$ is defined as the cumulative reward over a trajectory. It can be represented as a \textbf{finite-horizon undiscounted return}, which is the sum of rewards obtained within a fixed window of steps:
+$$\mathcal{R}(\tau) = \sum_{t=0}^T r^{a_t}_{s_t}$$
+
+, or as the \textbf{infinite-horizon discounted return}, which is the sum of all rewards ever obtained by the agent, but discounted by how far in the future they’re obtained. This formulation of return includes a discount factor $\gamma \in (0,1)$, which provide better theoretical convergence guarantees:
+
+$$\mathcal{R}(\tau) = \sum_{t=0}^\infty \gamma^t r^{a_t}_{s_t}$$
+
+In RL, any agent aims to obtain an optimal policy $\pi^\ast$ that maximizes the expected return when the agent acts according to it.
+
+\begin{equation}
+    \pi^\ast = \operatorname*{arg max}_\pi \mathop{\mathbb{E}}\limits_{\tau \sim \pi}\left[\mathcal{R}(\tau) \right]
+\label{eq:rl_objective}
+\end{equation}
+
+To achieve this goal, in many cases such as with DQN (as we will discuss later), it is necessary to have a notion of the value of a state or state-action pair. The \textbf{value} is defined as the expected return when starting from that state or state-action pair and then following a particular policy indefinitely. Below are some key concepts related to \textbf{value functions}:
+
+\begin{itemize}
+    \item The \textbf{On-policy Value Function} gives the expected return if you start in state $s$ and always act according to policy $\pi$:
+    $$V^\pi(s) = \mathop{\mathbb E}_{\tau \sim \pi} \left[\mathcal{R}(\tau | s_0 = s)\right]$$
+    \item The \textbf{On-Policy Action-Value Function}, $Q^{\pi}(s,a)$, which gives the expected return if you start in state $s$, take an arbitrary action $a$ (which may not have come from the policy), and then forever after act according to policy $\pi$:
+    $$Q^{\pi}(s,a) = \mathop{\mathbb E}_{\tau \sim \pi}\left[R(\tau)\left| s_0 = s, a_0 = a\right.\right]$$
+    \item The \textbf{Optimal Value Function}, $V^*(s)$, which gives the expected return if you start in state $s$ and always act according to the optimal policy in the environment:
+    $$V^*(s) = \max_{\pi} \underE{\tau \sim \pi}{R(\tau)\left| s_0 = s\right.}$$
+    \item The \textbf{Optimal Action-Value Function}, $Q^*(s,a)$, which gives the expected return if you start in state s, take an arbitrary action a, and then forever after act according to the optimal policy in the environment:
+    \begin{equation}
+        Q^*(s,a) = \max_{\pi} \underE{\tau \sim \pi}{R(\tau)\left| s_0 = s, a_0 = a\right.}
+        \label{eq:q_optimal_value}
+    \end{equation}
+
+
+\end{itemize}
 
 % \subsection{Value Iteration}
 % \subsection{Q-Learning}
 
+
+
 \subsection{Deep Q-Learning (DQN)}
+The Deep Q-Learning (DQN) \cite{mnih2013playing, mnih2015human} algorithm introduces a novel method to train q-learning algorithms with neural network using high-dimensional partially-observable state spaces (e.g. pixels), effectively addressing two important problems for training deep neural networks in RL, which are the highly-correlated states and non-stationary distribution issues. The RL by nature will be a temporal sequential process, which produces highly-correlated states, and additionally; the data distribution will evolves as the algorithm learns new behaviors, which is called a non-stationary distribution. If we look to these two situations from a supervised learning perspective, they made complicated the training because a supervised learning requires identical independent distributed data. To address both of these issues, DQN introduces what is called Experience Replay (ER), which facilitates breaking temporal data correlations, leading to approximate independent and identically distributed (iid) data distributions.
+
+The \textbf{experience replay} (ER) works as a kind of dataset with a \textbf{fixed capacity} $N$, which stores tuples of experiences from the interaction of the agent with the environment in different time steps along the training (see Figure \ref{} ), given by 
+$$e_t = (s_t, a_t, r_t, s_{t+1}), \quad e_t \in \mathcal{E}$$
+
+In some scenarios, it is even possible to add a variable discount factor per experiences such as $e_t = (s_t, a_t, r_t, \gamma_t, s_{t+1})$.
+
+During training mini batches from the experience replay are taken to train a neural network $Q_\theta$, which is trained to approximate the optimal state-action value function $Q^*$. In fact, the objective of DQN is to estimate this optimal state-action value function, such that the optimal policy is
+
+\begin{equation}
+    \pi^*(s) = \arg \max_a Q^* (s,a)
+    \label{eq:optinal_q_policy}
+\end{equation}
+
+Notice, by definition $Q^*(s,a)$ in Equation \ref{eq:q_optimal_value} gives the expected return for starting in state $s$, taking (arbitrary) action $a$, and then acting according to the optimal policy forever after. Then, by selecting the action with the maximum q-value we obtain the optimal policy that maximizes the expected return, as in Equation \ref{eq:rl_objective}.
+
+To estimate the q-value function, the DQN algorithm relies on a loss function based on the Bellman equations \cite{sutton2018reinforcement}, which indicates that the value of your starting point is the reward you expect to get from being there, plus the value of wherever you land next.
+
+\begin{align*}
+Q^*(s,a) &= \underE{s'\sim P(\cdot | s,a)}{\mathcal{R}(s,a) + \gamma \max_{a'} Q^*(s',a')}.
+\end{align*}
+
+As we aim to approximate $Q(s, a; \theta) \approx Q^*(s, a)$, a q-network can be trained to reduce the mean-square error in the Bellman equation by minimizing a sequence of loss function $L_i(\theta_i)$ that changes at each iteration $i$
+\begin{align*}
+    L_i (\theta_i) & = \underE{e_t \sim \mathcal{E}}{(y_i - Q(s_t, a_t; \theta_i))^2} \\
+    & = \underE{(s_t, a_t, r_t, s_{t+1}) \sim \mathcal{E}}{(r_t + \gamma \max_{a'} Q(s_{t+1}, a'; \theta^-_{i}) - Q(s_t, a_t; \theta_i))^2} 
+\end{align*}
+
+where the optimal targets $\mathcal{R}(s,a) + \gamma \max_{a'} Q^*(s',a')$ are substituted with approximated target values for iteration $i$
+\begin{equation}
+    y_i = r_t + \gamma \max_{a'} Q(s_{t+1}, a'; \theta^-_{i})
+\end{equation}
+
+, and the gradients respect to the parameters $\theta_i$
+
+\begin{equation}
+    \nabla_{\theta_i} L(\theta_i) = \underE{(s_t, a_t, r_t, s_{t+1}) \sim \mathcal{E}}{ \delta_t \nabla_{\theta_i}Q(s_t, a_t; \theta_i)} 
+\end{equation}
+
+where the \textbf{temporal difference error} (or td-error) for the $e_i$ experience tuple corresponds to
+\begin{equation}
+    \delta_i = r_t + \gamma \max_{a'} Q(s_{t+1}, a'; \theta^-_{i}) - Q(s_t, a_t; \theta_i)
+\end{equation}
+
+It is relevant to notice some considerations when using this loss function such as:
+
+\begin{itemize}
+    \item The parameters $\theta^-_{i}$ corresponds to a separated copy of the q-network parameters that is updated with $\theta_{i}$ at every C gradient descent steps to stabilize the training.
+    \item In contrast to supervised learning, the target relies in the parameters $\theta_{i-1}$ changing over time as the algorithm learns new behaviors.
+    \item The algorithm is \textit{model-free} because it is not required to built an explicit estimation of transitions $P$ that rules the system.
+    \item Although the algorithm will approximate the greedy policy on Equation \ref{eq:optinal_q_policy}, it will learn that strategy by using a behavioral \textbf{$\epsilon$-greedy policy}, which encourages exploration by taking a random action with probability $\epsilon$ along the training. 
+
+    \begin{equation}
+        \pi^\epsilon(a | s) = 
+        \begin{cases} 
+        a \sim \text{Uniform}(\mathcal{A}) & \text{with probability } \epsilon \\
+        \arg\max_{a} Q(s, a; \theta) & \text{with probability } 1 - \epsilon
+        \end{cases}
+    \end{equation}
+    
+    Normally, this epsilon value is annealing after some iterations to keep a small value as the learning approximate to a convergence point.
+    \item When learning from pixels, a number of $n$ frames are normally \textbf{stacked} together to represented an state in a preprocessing step. Additionally, the same action can be repeated over the $n$ stacked frames in a method called \textbf{skip frames} to reduce the training overload. Then, a state will be represented by $s_{t+1} = \phi(\{x_{t-n}, x_{t-(n-1)}, \cdots, x_{t}\})$, where the function $\phi$ will stacked a window of $n$ frames (normally set to $n=4$), repeating the same action. For the sake of simplicity, we are just going to use the notion of states to write the algorithms, but it important to recall to the reader that a stack and skip frame are done to prepare the states.
+
+    % TODO: Maybe define more the way the stack work and things like that
+    
+    % The states, in our work, will be given a stack of frames, such that if $o$
+\end{itemize}
+
+The complete algorithm is depicted in Algorithm \ref{algorithm:dqn}. Note the algorithm was slightly modified compared to the one in Mnih et al.'s work \cite{mnih2013playing, mnih2015human} to run the algorithm for total budget $T$ (total number of steps in the whole training) instead of running it per episode. Additionally, the algorithm show a per sample update procedure instead of the whole minibatch in order to make the comparison with prioritized alternatives clearlier, but the reader has to remember that in practice the gradients are calculated in the whole batch.
+
+\begin{algorithm}
+\caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}
+\label{algorithm:dqn}
+\begin{algorithmic}[1]
+\State \textbf{Initialize} replay memory $\mathcal{D}$ to capacity $N$
+\State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
+\State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
+\For{episode $= 1, M$}
+    \State \textbf{Initialise} sequence $s_1 = \{x_1\}$ and preprocessed sequence $\phi_1 = \phi(s_1)$
+    \For{$t = 1, T$}
+        \State With probability $\epsilon$ select a random action $a_t$
+        \State otherwise select $a_t = \arg\max_a Q(\phi(s_t), a; \theta)$
+        \State Execute action $a_t$ and observe reward $r_t$ and image $x_{t+1}$
+        \State Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preprocess $\phi_{t+1} = \phi(s_{t+1})$
+        \State Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in $\mathcal{D}$
+        \State Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from $\mathcal{D}$
+        \State Set $y_j = 
+        \begin{cases} 
+            r_j & \text{for terminal } \phi_{j+1}\\
+            r_j + \gamma \max_{a'} Q^-(\phi_{j+1}, a'; \theta^-) & \text{for non-terminal } \phi_{j+1}
+        \end{cases}$
+        \State Perform a gradient descent step on $(y_j - Q(\phi_j, a_j; \theta))^2$
+        \State Every C steps update $\theta^- = \theta$
+    \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+\caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}
+\begin{algorithmic}[1]
+\State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, exponents $\alpha$ and $\beta$, budget $T$ (total steps).
+\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $\Delta = 0$, $p_1 = 1$
+\State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
+\State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
+% \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
+\For{$t = 1$ to $T$}
+    \State Observe $s_t$
+    \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
+    \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
+    \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$
+    \If{$t \equiv 0 \mod K$}
+        \For{$j = 1$ to $k$}
+            \State Sample transition $e_j \sim \text{Uniform}(\mathcal{D})$
+            \State Set $y_j = 
+            \begin{cases} 
+                r_j & \text{for terminal } s_{j+1}\\
+                r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
+            \end{cases}$
+            \State Compute TD-error $\delta_j = y_j - Q(s_j, a_j)$
+            \State Accumulate weight-change $\Delta \leftarrow \Delta + \delta_j \cdot \nabla_\theta Q(s_j, a_j)$
+        \EndFor
+        \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
+        \State Every C optimizing steps update $\theta^- \leftarrow \theta$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
 \subsection{Prioritized Experience Replay}
+
+Schaul et al. \cite{schaul2015prioritized} explored the limitations of experience replay and found that a DQN algorithm revisits the same experience tuple an average of eight times, not all of which lead to significant improvements. In consequence, they proposed a Prioritized Experience Replay (PER) to non-uniformly sample experiences from the replay buffer based on a priority measure. Although open to explore other priorities candidates, they hypothesized that TD-error can be used as an indicator of the expected learning progress, and by using it as a priority measure, it could encourage more frequently replay experiences which lead to higher improvements.
+
+Specifically, the sampling probability $P(i)$ of an experience tuple $e_i$ will be given by
+
+\begin{equation}
+    P(i) = \frac{p_i^\alpha}{\sum_k p_k^\alpha}
+\end{equation}
+
+where $\alpha$ controls the degree of prioritization, with $\alpha = 0$ the uniform case, and $p_i$ is the priority of an experience tuple $e_i$. They evaluated two possible strategies a \textbf{proportional prioritization} with 
+\begin{equation}
+    p_i = | \delta_i | + \epsilon
+\end{equation}
+
+where $\epsilon$ is used to revised experiences even when td-error equal zero. This strategy uses a 'sum-tree' data structure to sample efficiently from a large experience buffer without depending on the buffer capacity $N$.
+
+Additionally, they evaluated a \textbf{ranked-based prioritization} $p_i = \frac{1}{rank(i)}$, where the $rank(i)$ is given by the index of the experience in the buffer sorted according the $| \delta_i |$. This strategy employees a piece-wise linear function with $k$ segments of equal probability, allowing to sample a segment and then sampling uniformly from that segment.
+
+Nevertheless, this method introduces a bias because it changes the distribution of updates in an uncontrollable way.
+
+
+to estimate the optimal values $Q^*$ 
+
+it changes the distribution from tu
+
+% TODO:
+% Domingo acabar background
+% Lunes - Martes acabar State of the art
+% Miercoles - Jueves - Viernes Metodologia
+% Sabado Domingo Lunes Resultados y discusion
+% Martes Miercoles Jueves Revision y mejorar graficas (5-7 acabado)
+% 8 Ver si incluyo la prueba teorica
+% Y aplicar a trabajos
+
+\begin{algorithm}
+\caption{DQN with Prioritized Experience Replay (PER) (Schaul et al. \cite{schaul2015prioritized})}
+\begin{algorithmic}[1]
+\State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, exponents $\alpha$ and $\beta$, budget $T$ (total steps).
+\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $\Delta = 0$, $p_1 = 1$
+\State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
+\State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
+% \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
+\For{$t = 1$ to $T$}
+    \State Observe $s_t$
+    \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
+    \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
+    \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$ with maximal priority $p_t = \max_{i < t} p_i$
+    \If{$t \equiv 0 \mod K$}
+        \For{$j = 1$ to $k$}
+            \State Sample transition $e_j \sim P(j) = \frac{p_j^\alpha}{\sum_i p_i^\alpha}$
+            \State Compute importance-sampling weight $w_j = \left( N \cdot P(j) \right)^{-\beta} / \max_i w_i$
+            \State Set $y_j = 
+            \begin{cases} 
+                r_j & \text{for terminal } s_{j+1}\\
+                r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
+            \end{cases}$
+            \State Compute TD-error $\delta_j = y_j - Q(s_{j}, a_{j})$
+            \State Update transition priority $p_j \leftarrow |\delta_j|$
+            \State Accumulate weight-change $\Delta \leftarrow \Delta + w_j \cdot \delta_j \cdot \nabla_\theta Q(s_{j}, a_{j})$
+        \EndFor
+        \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
+        \State Every C optimizing steps update $\theta^- \leftarrow \theta$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+
+
+
 
 \section{Bisimulation}
 
@@ -80,6 +335,9 @@ In mathematics, an equivalence relation is a binary relation that is reflexive, 
     \item  If $a=b$, then $b=a$ (symmetric).
     \item If $a=b$ and $b=c$, then $a=c$ (transitive). 
 \end{enumerate}
+
+\subsubsection{Equivalence Classes}
+
 
 \subsection{Bisimulation metric}
 
@@ -135,7 +393,7 @@ W_d\left(\mu, \mu^{\prime}\right)=\min _{\substack{\left(Z, Z^{\prime}\right) \\
 
 where $u, u'\in \mathcal{P}(\mathcal{S})$, and $(Z,Z')$ denotes all the possible couplings.
 
-The operator $T^\pi_k(d)$ works as standard operators in dynamic programming (e.g. value iteration), which will eventually converge to a fixed point $d^\sim$ up to an accuracy $\delta$, where $T^\pi_K(d)$ maps effectively $\mathcal{M}(S)$ into itself, and $T^\pi_K(d) = d^\sim : S \times S \rightarrow \mathbb{R}$. Then, let an initial estimate $d_0$
+The operator $T^\pi_k(d)$ works as standard operators in dynamic programming (e.g. value iteration \cite{sutton1988learning, sutton2018reinforcement}), which will eventually converge to a fixed point $d^\sim$ up to an accuracy $\delta$, where $T^\pi_K(d)$ maps effectively $\mathcal{M}(S)$ into itself, and $T^\pi_K(d) = d^\sim : S \times S \rightarrow \mathbb{R}$. Then, let an initial estimate $d_0$
 
 $$d_0 \rightarrow T^\pi_1(d_0) = d_1 \rightarrow T^\pi_2(d_1) = d_2 \cdots \rightarrow d^\sim$$
 

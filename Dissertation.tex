@@ -1,11 +1,11 @@
 \documentclass[pdftex,11pt,a4paper,oneside]{report}
 
 % Set the margins with the geometry package
-\usepackage[a4paper, left=4cm, right=4cm]{geometry}
+\usepackage[a4paper, left=3.5cm, right=3.5cm]{geometry}
 
 \usepackage{amsmath}
 \usepackage{algorithm}
-\usepackage{algorithmic}
+% \usepackage{algorithmic}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{lipsum}
@@ -22,6 +22,9 @@
     citecolor = cyan
 }
 \usepackage{amssymb} % This package includes \mathbb
+% \usepackage{algorithmicx}
+% \usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \newtheorem{definition}{Definition}
 
@@ -31,6 +34,8 @@
 
 % Styles can be Sonny, Lenny, Glenn, Conny, Rejne, Bjarne and Bjornstrup
 \usepackage[Sonny]{fncychap} 
+
+\newcommand{\underE}[2]{\mathop{\mathbb{E}}\limits_{#1}\left[#2\right]}
 
 \begin{document}
 
@@ -50,7 +55,7 @@
 \include{Chapter2/Chapter2}
 \include{Chapter3/Chapter3}
 \include{Chapter4/Chapter4}
-% \include{Chapter5/Chapter5}
+\include{Chapter5/Chapter5}
 % \include{Chapter6/Chapter6}
 % \include{Chapter7/Chapter7}
 % \include{Chapter8/Chapter8}
