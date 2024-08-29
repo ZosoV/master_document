@@ -1,48 +1,146 @@
 % !TEX root =  ../Dissertation.tex
 
 \chapter{Methodology}
-
-This section depicts the methodology used for the present work by walking through a motivating example, and defining the method used afterwards.
-
-% Example????
+This section outlines the methodology used in the present work by walking through a motivating example that revisits the bisimulation definitions from Section \ref{sec:bisimulation_background} to illustrate why our method is effective. Following this, we will define our proposed method and provide a detailed explanation of the algorithm used in practice.
 
 \section{A Motivating Example: Grid World}
 
 The Grid World is a simple toy example (see Figure \ref{}), with the following properties in terms of a MDP (See Section \ref{sec:mdp_definition}):
 
 \begin{itemize}
-    \item The state space is discrete an given by $ s \in S : \{0,n\} \times \{0,m\}$, all the positions $(x,y)$ of the agent in the grid.
-    \item The actions space is discrete given by $a \in A: \{0,3\}$, which corresponds to four possible directions: down (0), right (1), up (2) and left (4).
-    \item The transition are deterministic and only restricted to adjacent cells, such that the agent will move to any adjacent cell with probability 1 $P(s,a) = 1$ (except if this is a wall when it keeps in the same state, or transition to the same state with probability 1).
-    \item The rewards are binary and sparse, with the immediate reward always being -1 unless the agent reaches the goal (G), in which case it becomes 200.
+    \item The state space is discrete an given by $ s \in \mathcal{S} : \{0,n\} \times \{0,m\}$, all the positions $(x,y)$ of the agent in the grid.
+    \item The action space is discrete given by $a \in \mathcal{A}: \{0,3\}$, which corresponds to four possible directions: down (0), right (1), up (2) and left (4).
+    \item The transitions are deterministic and only restricted to adjacent cells, such that the agent will move to any adjacent cell with $P(s,a) = 1$ (if it hits the wall, it keeps in the same state).
+    \item The rewards are binary and sparse, with the immediate reward always being -1 unless the agent reaches the goal (G), in which case it becomes 100.
     \item And the discount factor $\gamma$ is 0.99
 \end{itemize}
 
-According to Definiton \ref{}, a bisimulation must hold two constraints the Reward Equivalence and Transition Probability Equivalence. 
+The two isolated rooms in the environment Figure \ref{} clear showcases similar behaviors due to both rooms are symmetric, which is a good starting point to analyze behavioral similarities. In such way, if we look to the properties of bisimulation (see Definition \ref{}), we can notice that both reward and transition probability equivalence are easily satisfied when you pair states from each room in a symmetrical way, which corresponds to the largest bisimulation $\sim$. Notice that to check the reward and transition equivalences requires to take into account all actions, states, and equivalence classes $C$, which might become quite overwhelming. Nonetheless, in the Grid World, it is easily to check that the properties hold because the transitions are deterministic. Then, the sum over the equivalence relation $P_s^a(C)$ will be $4$ (except for the terminal state), and the rewards are mainly the same along the whole environment (except when it reach the goal).
+
+However, commonly in RL, we are more interested in more complex behaviors (e.g. high-dimensional states) not only in symmetrical behaviors. We are gonna start analyzing more complex behaviors progressively, for now we will start by analyzing the behavior when we open a passage between both rooms. If we open a passage, we can notice that the equivalence classes collapse to the identity relation, a trivial solution which is not useful in practice. This happens because, as mention in before, the bisimulation is a very strong theoretical assumption which requires an exact matching along rewards and transitions, which in practice is not easily to get.
+
+In consequence, the on-policy bisimulation (Definition \ref{}) can be used to only focus on the transition and reward given by the policy action. Notice in the deterministic case, or Grid World, the Equation \ref{eq:on_policy_reward_transition} is reduced too
+\begin{equation}
+\begin{aligned}
+\textbf{Given } a & = \pi(x), \\
+r_x^\pi & = r_x^a \\
+\forall C \in \mathcal{S}_{B^\pi}, \mathcal{P}_x^\pi(C) & = \sum_{x^{\prime} \in C} P_x^a( x^{\prime})
+\end{aligned}
+\end{equation}
+In consequence, it easily to verified that the properties are satisfied, we only have to check one reward and one transition per state in order to hold the reward and transition equivalence properties. The results are show in the Figure \ref{}, where we can notice that the on-policy bisimulation effectively reduces the intial MDP of 13 states to and MDP of 4 states. Remain that this method requires to have knowledge of the policy at hand; to show case the nature of the on-policy bisimulation in its optimal case, we used the optimal policy $\pi^*$ obtained with a value iteration algorithm \cite{sutton2018reinforcement}, but in practice an online policy could taken into account. 
+
+While these groups clearly capture the behavioral similarity of states in the Markov Chain induce by the given policy, they still are not useful in practice for RL, where we are normally estimating things from data, and the calculation of equivalence relation are quite sensitive to infinitesimal variations. In such way, we are more interested in provide a notion of behavioral distance from every state vs all the others. The on-policy bisimulation metric in Definition \ref{} provides us the means to do that. Specifically, in our Grid Word, according to Castro \cite{castro2020scalable}, it is possible to reduce the on-policy bisimulation operator to the following operator because our environment is deterministic
+
+\begin{equation}
+    \label{eq:deterministic_on_policy_bisimulation_metric}
+    T^\pi_k(d)(x, y) = |r^\pi_x - r^\pi_{y}| + \gamma d(x',y') 
+\end{equation}
+
+where $x'$ corresponds to the next states chosen in a deterministic way by $\mathcal{N}$ with probability 1, $P(\mathcal{N}(s,\pi(S)) = 1$. Specifically, $\mathcal{N}(x,\pi(x))$ corresponds to the next state given the state $x$ and the action taken by the current policy $\pi(x)$.
+
+In such way, and considering that the on-policy is a contraction mapping, which will converge in a fixed point $d^\pi_\sim$, we can take advantage of the recurrence over $d$ in Equation \ref{eq:deterministic_on_policy_bisimulation_metric} to get the on-policy bisimulation metric thought an iterative application of the operator given an initial estimate $d_0$.
+
+$$d_0 \rightarrow T^\pi_1(d_0) = d_1 \rightarrow T^\pi_2(d_1) = d_2 \cdots \rightarrow d^\sim$$
+
+Specifically, we can initialize the $d_0$ in a tabular way with a matrix of full zeros where each cell corresponds to a pair of states in the environment (see Figure \ref{}). Then, the updates are made in a dynamic programming approach by repeatedly using the following rule:
+\begin{equation}
+    d_n(x,y) \leftarrow |r_x^a - r_y^a | + \gamma d_{n-1}(x',y')
+\end{equation}
+
+Figure \ref{} shows the result of this approach, and using these distance we apply a Multidimensional Scaling algorithm to get an approximation of the states in a 2D plane, clearly observing groups of states, but now using a soft notion of distance.
 
 
+The \textbf{Reward Equivalence}, corresponding to the Equation \ref{eq:reward_equivalence}, corresponds to analyze all the possible transitions between state $s_i$ and $s_j$
 
-In the Grid World, the Reward Equivalence holds by
-
-$$$$
-
-
-\subsection{Bisimulation in a Grid World}
-
-\subsection{On-policy Bisimulation in a Grid World}
-
-\subsection{On-policy Bisimulation metric in a Grid World}
+Our method will leverage this behavioral distances notion to encourage a more diverse sampling in the experience replay.
 
 %\subsection{On-policy MICO metric justification}
-
 \section{Bisimulation Prioritized Experience Replay}
+
+By using the perspective on \ref{}, we can clearly notice how the on-policy bisimulation distance tends to place behavioral similar states together and behavioral disimilar states far away. We will use this behavioral distance as a notion of 'surprising' (or more informative) experiences.
+
 
 \subsection{Diffuse metric}
 \subsection{Learning State Abstractions}
 \subsection{Priority Strategies}
 
+\begin{algorithm}
+\caption{DQN with Bisimulation Prioritized Experience Replay (PER)}
+\label{algorithm:dqn_per}
+\begin{algorithmic}[1]
+\State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, exponents $\alpha$ and $\beta$, budget $T$ (total steps), priority weigh $\mu$.
+\State \textbf{Initialize} action-value function $Q$ with random weights $\xi$, $\omega$
+\State \textbf{Initialize} target action-value function $Q^-$ with weights $\xi^- = \xi$ and $\omega = \omega$
+\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $\Delta_{\{\xi, \omega\}} = 0$, $\Delta_\omega = 0$, $p_1 = 1$
+% \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
+\For{$t = 1$ to $T$}
+    \State Observe $s_t$
+    \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
+    \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
+    \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$ with maximal priority $p_t = \max_{i < t} p_i$
+    \If{$t \equiv 0 \mod K$}
+        % \For{$j = 1$ to $k$}
+        \State Sample minibatch of transitions $e_j$ with probability $P(j) = \frac{p_j^\alpha}{\sum_i p_i^\alpha}$    
+        \State Compute importance-sampling weight $w_j = \left( N \cdot P(j) \right)^{-\beta} / \max_i w_i$
+        \State Set $y_j = 
+        \begin{cases} 
+            r_j & \text{for terminal } s_{j+1}\\
+            r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
+        \end{cases}$
+        \State Compute TD-error $\delta_j = y_j - Q(s_{j}, a_{j}; \theta)$
+        \State Perform a gradient descent step on $ \delta_j^2 = (y_j - Q(s_{j}, a_{j}; \theta))^2$
+        \State Update transition priority $p_j \leftarrow |\delta_j|$
+        \State Squarify minibatch of transition to get pairs 
+        \State Compute online distance $U_\omega(x, y) = $
+        \State Perform a gradient descent step on % Write loss function        
+        \State Every C optimizing steps update $\theta^- \leftarrow \theta$
+
+        
+        % \State Accumulate weight-change $\Delta_{\{\xi, \omega\}} \leftarrow \Delta_{\{\xi, \omega\}} + w_j \cdot \delta_j \cdot \nabla_\theta Q(s_{j}, a_{j})$
+        % \State Compute bisimulation distance error $\sigma_j = T_{\bar{\omega}}^U\left(r_x, x^{\prime}, r_y, y^{\prime}\right)-U_\omega(x, y)$
+        %  \State Accumulate weight-change $\Delta_{\omega} \leftarrow \Delta_{\omega} + w_j \cdot \sigma_j \cdot \nabla_\omega U_\omega(s_{i}, a_{j})$   
+
+        % \EndFor
+        % \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
 \section{Experimentation Setup}
 
 \subsection{Experiments and Environments}
 \subsection{TorchRL}
+
+The idea in practice is to take a notion of distance the euclidean distance (or cosine distance, etc) and learn states abstraction such that the euclidean (or selected) distance coincide with the MICO distance in the latent space. However, MICO distance is a diffuse metric, in such way we need to guarantee that we have positive self-distances for that reason the first term is introduced.
+
+
+It's quite useful in online learning when we an stream on experiences comming to agent instead of a full handed to the agent.
+
+
+In contrast, with deterministic priorities where we mainly have single fixed branches, this mico metric has indeed self-distance zero.
+
+
+For deterministic system, you do actually have deterministic distances
+
+Practically what the learning of an abstraction does is to use the operator and parametrized notion of distances to update the distance in a recurrence process, all due to the operator is itself a recurrence process similar to what happen with the bellman recurrence process in DQN
+
+Add the $U^\pi(x,x) \geq 0$, that allow us to have non-zero self-distances.
+
+You can use any distance notion, but in practice they have proof that the angular distance works the best.
+
+And the action are not taking into account because we can assume a fixed policy with the on-policy variant.
+
+It is justified to use the second term $U_\bar{\omega}$ in the target distance even for stochastic policies because is a unbiased estimator of the independent coupling show before the second term in the definition of mico distance.
+
+Hubber loss to do not over satured the mico loss with large distance that produce instabilities in the gradients updates. What is more important is really learn the fine details between some states those small differences.
+
+The network are indentical for both only the inputs are different (ojo).
+
+Mico loss applied directly to the representation, the output of the convolutional layer that were choosen to be the representation.
+
+Here we don't have extract parameters to learn the representation (extrat parameters for reconstruction losses), but the issue is that when the agent needs to make decision those extra parameters are not used, because those extra parameters are not used for the control part.
+
+NO EXTRA PARAMETERS
+
+Because mico loss can be plugged into any value-based agent, only to tunned one hyperparameter
