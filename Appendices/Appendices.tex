@@ -1,0 +1,45 @@
+\chapter{Appendices}
+\section{Appendix 1}
+
+\begin{algorithm}
+\caption{DQN with Matching under Independent Couplings (MICo)}
+\label{algorithm:dqn_mico}
+\begin{algorithmic}[1]
+\State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, budget $T$ (total steps).
+\State \textbf{Initialize} action-value function $Q$ with random weights $\xi$, $\omega$
+\State \textbf{Initialize} target action-value function $Q^-$ with weights $\{\bar{\xi},\bar{\omega}\} \leftarrow \{\xi, \omega\}$
+\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$%$\Delta_{\{\xi, \omega\}} = 0$, $\Delta_\omega = 0$, $p_1 = 1$
+% \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
+\For{$t = 1$ to $T$}
+    \State Observe $s_t$
+    \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
+    \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
+    \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$
+    \If{$t \equiv 0 \mod K$}
+        % \For{$j = 1$ to $k$}
+        \State Sample minibatch $B \sim \text{Uniform}(\mathcal{D})$ of transitions $e_j$        % \State Compute importance-sampling weight $w_j = \left( N \cdot P(j) \right)^{-\beta} / \max_i w_i$
+        \State Set $y_j = 
+        \begin{cases} 
+            r_j & \text{for terminal } s_{j+1}\\
+            r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \{\bar{\xi},\bar{\omega}\}) & \text{otherwise}
+        \end{cases}$
+        \State Compute TD-error $\delta_j = y_j - Q(s_{j}, a_{j}; \{\xi, \omega\})$, and loss $\mathcal{L}_{\text{TD}} = \delta_j^2 $
+        \State Squarify minibatch $B$ to get transition pairs $\left\langle x, r_x, x^{\prime}\right\rangle,\left\langle y, r_y, y^{\prime}\right\rangle$ 
+        \State Compute MICo loss $\mathcal{L}_{\text{MICo}} = \left(T_{\bar{\omega}}^U\left(r_x, x^{\prime}, r_y, y^{\prime}\right)-U_\omega(x, y)\right)^2$
+        \State Compute total loss $\mathcal{L}_\alpha(\xi, \omega) = (1 - \alpha) \mathcal{L}_{\text{TD}}(\xi, \omega) + \alpha \mathcal{L}_{\text{MICo}}(\omega)$
+        \State Perform a gradient descent step on $\mathcal{L}_\alpha(\xi, \omega)$
+        % \State Update transition priority $p_j \leftarrow (1 - \mu) |\delta_j| + \mu U_\omega(s_j,s_{j+1}) + \epsilon$
+        \State Every C optimizing steps update $\{\bar{\xi},\bar{\omega}\} \leftarrow \{\xi, \omega\}$
+        
+
+        
+        % \State Accumulate weight-change $\Delta_{\{\xi, \omega\}} \leftarrow \Delta_{\{\xi, \omega\}} + w_j \cdot \delta_j \cdot \nabla_\theta Q(s_{j}, a_{j})$
+        % \State Compute bisimulation distance error $\sigma_j = T_{\bar{\omega}}^U\left(r_x, x^{\prime}, r_y, y^{\prime}\right)-U_\omega(x, y)$
+        %  \State Accumulate weight-change $\Delta_{\omega} \leftarrow \Delta_{\omega} + w_j \cdot \sigma_j \cdot \nabla_\omega U_\omega(s_{i}, a_{j})$   
+
+        % \EndFor
+        % \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}

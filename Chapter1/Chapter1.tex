@@ -14,8 +14,18 @@ Bisimulation metrics \cite{ferns2004metrics, ferns2011bisimulation, ferns2014bis
 
 In this work, we will explore the on-policy bisimulation metric proposed by Castro \cite{castro2020scalable}, which specifically emphasizes the dynamics induced by the current policy. Specifically, a surrogate on-policy bisimulation metric called Matching under Independent Couplings (MICO) \cite{castro2021mico} metric, which works more efficiently under both discrete and stochastic environments, will be obtained as part of the learning of state abstractions. According to \cite{zhang2020learning} and \cite{castro2021mico}, the calculation of a bisimulation metric (or surrogate) in an online manner as part of the learning of state abstractions is a more effective way to obtain this metric.
 
+\section{Contributions}
 
-In this work, we propose learning state abstractions to incorporate a bisimulation metric as priority in a prioritized experience replay. We explored the on-policy bisimulation metric proposed by Castro \cite{castro2020scalable}, which specifically emphasizes the dynamics induced by the current policy. Specifically, we used a surrogate on-policy bisimulation metric called Matching under Independent Couplings (MICO) \cite{castro2021mico} metric, which works more efficiently under both discrete and stochastic environments and is obtained as part of the learning of state abstractions. As noted in \cite{zhang2020learning} and \cite{castro2021mico}, calculating a bisimulation metric (or its surrogate) online during state abstraction learning is a more effective approach. Our Bisimulation Prioritized Experience Replay (BPER) aims to 1) emphasize behaviorally relevant transitions, thereby avoiding task-agnostic experience sampling, 2) mitigate the insufficient sample space coverage by encouraging the sampling of behavioral dissimilar states, increasing the data diversity, and 3) alleviate the outdated priorities by having a better tendency to constant fixed priorities.
+In this work, we propose learning state abstractions to incorporate a bisimulation metric as priority in a prioritized experience replay. We explored the on-policy bisimulation metric proposed by Castro \cite{castro2020scalable}, which specifically emphasizes the dynamics induced by the current policy. Specifically, we used a surrogate on-policy bisimulation metric called Matching under Independent Couplings (MICO) \cite{castro2021mico} metric, which works more efficiently under both discrete and stochastic environments and is obtained as part of the learning of state abstractions. As noted in \cite{zhang2020learning} and \cite{castro2021mico}, calculating a bisimulation metric (or its surrogate) online during state abstraction learning is a more effective approach. Our Bisimulation Prioritized Experience Replay (BPER) aims to 1) emphasize behaviorally relevant transitions, thereby avoiding task-agnostic experience sampling, 2) alleviate the outdated priorities by having a better tendency to constant fixed priorities, and 
+3) mitigate the insufficient sample space coverage by encouraging the sampling of behavioral dissimilar states, increasing the data diversity.
+
+\section{Document Structure}
+
+For the reader don't familiarized with reinforcement learning, we recommend start by looking to the RL background informaiton on. Otherwise, we recommend to start by Bisimulation Background.
+
+Literature review helps us to position our method in the state of the art, but it could be skipped if the objective is to understand the method. I will just recommend to read a little bit about state abstractions, which is a fundamental part for the proposed method in this thesis.
+
+After that we recommend explore methodology and result and discussion.
 
 
 NOTE: I think I need to included something about how the thesis is structured.

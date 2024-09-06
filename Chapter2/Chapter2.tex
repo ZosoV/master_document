@@ -87,6 +87,7 @@ To achieve this goal, in many cases such as with DQN (as we will discuss later),
 
 
 \subsection{Deep Q-Learning (DQN)}
+\label{sec:dqn}
 The Deep Q-Learning (DQN) \cite{mnih2013playing, mnih2015human} algorithm introduces a novel method to train q-learning algorithms with neural network using high-dimensional partially-observable state spaces (e.g. pixels), effectively addressing two important problems for training deep neural networks in RL, which are the highly-correlated states and non-stationary distribution issues. The RL by nature will be a temporal sequential process, which produces highly-correlated states, and additionally; the data distribution will evolves as the algorithm learns new behaviors, which is called a non-stationary distribution. If we look to these two situations from a supervised learning perspective, they made complicated the training because a supervised learning requires identical independent distributed data. To address both of these issues, DQN introduces what is called Experience Replay (ER), which facilitates breaking temporal data correlations, leading to approximate independent and identically distributed (iid) data distributions.
 
 The \textbf{experience replay} (ER) works as a type of dataset with a \textbf{fixed capacity} $N$, storing tuples of experiences from the agent's interactions with the environment at different time steps during training (see Figure \ref{}), represented as
@@ -188,9 +189,38 @@ The complete algorithm is presented in Algorithm \ref{algorithm:dqn}. Note that 
 \end{algorithmic}
 \end{algorithm}
 
+\begin{algorithm}
+\caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}
+\label{algorithm:dqn}
+\begin{algorithmic}[1]
+\State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, budget $T$ (total steps).
+\State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
+\State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
+\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$ %$\Delta_{\{\xi, \omega\}} = 0$, $\Delta_\omega = 0$, $p_1 = 1$
+% \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
+\For{$t = 1$ to $T$}
+    \State Observe $s_t$
+    \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
+    \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
+    \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$
+        % \For{$j = 1$ to $k$}
+        \State Sample minibatch $B \sim \text{Uniform}(\mathcal{D})$ of transitions $e_j$
+        \State Compute importance-sampling weight $w_j = \left( N \cdot P(j) \right)^{-\beta} / \max_i w_i$
+        \State Set $y_j = 
+        \begin{cases} 
+            r_j & \text{for terminal } s_{j+1}\\
+            r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
+        \end{cases}$
+        \State Compute TD-error $\delta_j = y_j - Q(s_{j}, a_{j}; \theta)$, and TD-loss $\mathcal{L}_{\text{TD}} = \delta_j^2 $
+        \State Perform a gradient descent step on $\mathcal{L}_{\text{TD}}$
+        % \State Update transition priority $p_j \leftarrow |\delta_j|$
+        \State Every C optimizing steps update $\theta^- \leftarrow \theta$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Prioritized Experience Replay}
-
+\label{sec:per}
 Schaul et al. \cite{schaul2015prioritized} explored the limitations of experience replay and discovered that a DQN algorithm revisits the same experience tuple an average of eight times, with not all revisits leading to significant improvements. As a result, they proposed Prioritized Experience Replay (PER), which non-uniformly samples experiences from the replay buffer based on a priority measure. While they left room for exploring other potential priority measures, they hypothesized that TD-error could serve as an indicator of expected learning progress. By using TD-error as a priority measure, they aimed to more frequently replay experiences that are likely to result in greater improvements.
 
 Specifically, the sampling probability $P(i)$ of an experience tuple $e_i$ will be given by
@@ -220,7 +250,8 @@ Nevertheless, this prioritized method introduces a bias in the estimation of the
     \nabla_{\theta_i} L(\theta_i) = \underE{(s_t, a_t, r_t, s_{t+1}) \sim \mathcal{E}}{ w_i \delta_t \nabla_{\theta_i}Q(s_t, a_t; \theta_i)} 
 \end{equation}
 
-Algorithm \ref{algorithm:dqn_per} showcases the whole prioritizing process and the changes made to the original DQN Algorithm \ref{algorithm:dqn}. It is important to notice that for practical reasons, the priorities are only updated in the current sampled batch because it is computational inefficient to update the whole replay buffer, specially if it is very large. 
+Algorithm \ref{algorithm:dqn_per} showcases the whole prioritizing process and the changes made to the original DQN Algorithm \ref{algorithm:dqn}. It is important to notice that for practical reasons, the priorities are only updated in the current sampled batch because it is computational inefficient to update the whole replay buffer, specially if it is very large. Additionally, new transitions included in the experience replay are assigned with a maximal priority in order to guarantee that all experiences are seen at least one.
+
 
 % TODO:
 % Domingo acabar background
@@ -238,7 +269,7 @@ Algorithm \ref{algorithm:dqn_per} showcases the whole prioritizing process and t
 \State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, exponents $\alpha$ and $\beta$, budget $T$ (total steps).
 \State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
 \State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
-\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $\Delta = 0$, $p_1 = 1$
+\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $p_1 = 1$ (inital priority) %$\Delta_{\{\xi, \omega\}} = 0$, $\Delta_\omega = 0$, $p_1 = 1$
 % \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
 \For{$t = 1$ to $T$}
     \State Observe $s_t$
@@ -246,24 +277,24 @@ Algorithm \ref{algorithm:dqn_per} showcases the whole prioritizing process and t
     \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
     \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$ with maximal priority $p_t = \max_{i < t} p_i$
     \If{$t \equiv 0 \mod K$}
-        \For{$j = 1$ to $k$}
-            \State Sample transition $e_j \sim P(j) = \frac{p_j^\alpha}{\sum_i p_i^\alpha}$
-            \State Compute importance-sampling weight $w_j = \left( N \cdot P(j) \right)^{-\beta} / \max_i w_i$
-            \State Set $y_j = 
-            \begin{cases} 
-                r_j & \text{for terminal } s_{j+1}\\
-                r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
-            \end{cases}$
-            \State Compute TD-error $\delta_j = y_j - Q(s_{j}, a_{j})$
-            \State Update transition priority $p_j \leftarrow |\delta_j|$
-            \State Accumulate weight-change $\Delta \leftarrow \Delta + w_j \cdot \delta_j \cdot \nabla_\theta Q(s_{j}, a_{j})$
-        \EndFor
-        \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
+        % \For{$j = 1$ to $k$}
+        \State Sample minibatch $B$ of transitions $e_j$ with probability $P(j) = \frac{p_j^\alpha}{\sum_i p_i^\alpha}$    
+        \State Compute importance-sampling weight $w_j = \left( N \cdot P(j) \right)^{-\beta} / \max_i w_i$
+        \State Set $y_j = 
+        \begin{cases} 
+            r_j & \text{for terminal } s_{j+1}\\
+            r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
+        \end{cases}$
+        \State Compute TD-error $\delta_j = y_j - Q(s_{j}, a_{j}; \theta)$, and TD-loss $\mathcal{L}_{\text{TD}} = \delta_j^2 $
+        \State Perform a gradient descent step on $\mathcal{L}_{\text{TD}}$, weighting the updates by $w_j$
+        \State Update transition priority $p_j \leftarrow |\delta_j|$
         \State Every C optimizing steps update $\theta^- \leftarrow \theta$
     \EndIf
 \EndFor
 \end{algorithmic}
 \end{algorithm}
+
+
 
 \section{Bisimulation}
 \label{sec:bisimulation_background}
@@ -309,6 +340,7 @@ Initially introduced in the field of concurrency theory, \textbf{bisimulation} \
 
 
 \begin{definition}[Bisimulation relation, Givan et al. \cite{givan2003equivalence}]
+\label{def:bisimulation}
 Given an MDP $M$, an equivalence relation $E$ between states is a \textbf{bisimulation relation} if, for all states $x, y \in \mathcal{S}$ that are equivalent under $E$ the following conditions hold:
 % \begin{enumerate}
 %     \item $\mathcal{R}\left(s_i, a\right) =\mathcal{R}\left(y, a\right) \quad \forall a \in \mathcal{A},$
@@ -347,6 +379,7 @@ The strong behavioral guarantees of the aforementioned bisimulation relations ca
 Under these circumstances, Castro's work \cite{castro2020scalable} proposes an \textbf{on-policy bisimulation relation}, which, instead of looking to all actions matching, \textit{focus only on the current policy actions}. This approach aligns better with what RL algorithm does, where commonly is of interest to keep a behavioral current policy which is updated iteratively as the learning progress; allowing to focus over time only on the transitions of interest (not in transition that does not lead to large values, which is an improper way to account for behaviors).
 
 \begin{definition}[On-policy Bisimulation Relation, Castro \cite{castro2020scalable}]
+\label{def:on-policy-bisimulation}
 Given an MDP $M$, an equivalence relation $E^\pi$ between states is a $\pi$-\textbf{bisimulation relation} if, for all states $x, y \in \mathcal{S}$ that are equivalent under $E^\pi$ the following conditions hold:
 \begin{align}
 \label{eq:on_policy_reward_equivalence}
@@ -384,6 +417,7 @@ The direct use of bisimulation relations is generally problematic because these 
 In this context, Castro's work \cite{castro2020scalable} proposed an \textbf{on-policy bisimulation metric}, which induces the on-policy bisimulation equivalence relation mention before, specifically the largest one $\sim$.
 
 \begin{definition}[On-policy Bisimulation metric, Castro \cite{castro2020scalable} - Theorem 2]
+\label{def:on_policy_bisimulation_metric}
 A $\pi$-bisimulation metric $d^\pi_\sim$ is the unique fixed-point of the operator $T^\pi_K : \mathcal{M(S)} \rightarrow \mathcal{M(S)}$, where 
 \begin{equation}
     \label{eq:on_policy_bisim_metric}
@@ -436,6 +470,7 @@ To address the aforementioned issues, Castro et al. \cite{castro2021mico} introd
 In an independent coupling, both $x'$ and $y'$ are sampled independently from $P_x^\pi(x')$ and $P_y^\pi(y')$, respectively, with no attempt to optimize the joint distribution $\psi$ to minimize the expected distance $U$, and having $\psi(x',y') = P_x^\pi \cdot P_y^\pi$.
 
 \begin{definition} [MICo update operator, Castro et al. \cite{castro2021mico}]
+\label{def:mico_operator}
 Given $\pi \in \mathcal{P(A)}^{\mathcal{S}}$, the MICO update operator $T^\pi_M : \mathbb{R}^{\mathcal{S} \times \mathcal{S}} \rightarrow \mathbb{R}^{\mathcal{S} \times \mathcal{S}}$
 
 \begin{equation}
@@ -446,9 +481,7 @@ Given $\pi \in \mathcal{P(A)}^{\mathcal{S}}$, the MICO update operator $T^\pi_M 
 for all $U: \mathcal{S} \times \mathcal{S} \rightarrow \mathbb{R}$, with $r_x^\pi =\sum_a \pi(a \mid x) r_x^a$ and $P_x^\pi =\sum_a \pi(a \mid x) P^a_x(\cdot) $ for all $x \in \mathcal{S}$, 
 \end{definition}
 
-Similar to the on-policy bisimulation metric, the MICo operator $T^\pi_M$ is a contraction mapping and has a unique fixed point $U^\pi \in \mathbb{R}^{\mathcal{S} \times \mathcal{S}}$. An iterative application of the operator will converge to that fixed point.
-
-Notice that MICo provides the following theoretical guarantees, similar to aforementioned bisimulation metrics
+Similar to the on-policy bisimulation metric, the MICo operator $T^\pi_M$ is a contraction mapping and has a unique fixed point $U^\pi \in \mathbb{R}^{\mathcal{S} \times \mathcal{S}}$. An iterative application of the operator will converge to that fixed point. Additionally, MICo provides similar theoretical guarantees as other bisimulation metrics.
 \begin{equation}
     | V^\pi(x) -V^\pi(y) | \leq U^\pi(x,y)
 \end{equation}
@@ -460,6 +493,7 @@ Notice that MICo provides the following theoretical guarantees, similar to afore
 The MICo metric is not a standard metric; it is a \textbf{diffuse metric}.
 
 \begin{definition} [Diffuse metric, Castro et al. \cite{castro2021mico}]
+\label{def:diffuse_metric}
     Given a set $X$, a function $d : X \times X \rightarrow R$ is a diffuse metric if the following axioms hold: (i) $d(x, y) \geq 0$ for any $x, y \in X$ ; (ii) $d(x, y) = d(y, x)$ for any $x, y \in X$ ; (iii) $d(x, y) \leq d(x, z) + d(y, z) \forall x, y, z \in X$ .
 \end{definition}
 

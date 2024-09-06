@@ -38,6 +38,29 @@
 
 \newcommand{\underE}[2]{\mathop{\mathbb{E}}\limits_{#1}\left[#2\right]}
 
+\usepackage{amsthm} % Provides the proof environment
+\usepackage{mdframed} % Allows creating custom framed environments
+
+% Define a new environment for Strategy
+\newmdtheoremenv[%
+    linecolor=blue,  % Line color of the box
+    linewidth=1pt,   % Thickness of the border line
+    roundcorner=5pt, % Rounded corners radius
+    backgroundcolor=blue!5, % Background color of the box
+    innertopmargin=8pt, % Inner margin at the top of the box
+    innerbottommargin=10pt, % Inner margin at the bottom of the box
+    innerleftmargin=10pt, % Inner left margin of the box
+    innerrightmargin=10pt, % Inner right margin of the box
+    skipabove=10pt, % Vertical space before the box
+    skipbelow=10pt  % Vertical space after the box
+]{strategy}{Strategy}
+
+
+\usepackage{caption}     % For captioning
+\usepackage{subcaption}  % For subfigures
+\usepackage{booktabs}  % For better horizontal lines in tables
+\usepackage{array}
+
 \begin{document}
 
 \include{Preamble/Frontpage}
@@ -60,7 +83,7 @@
 % \include{Chapter6/Chapter6}
 % \include{Chapter7/Chapter7}
 % \include{Chapter8/Chapter8}
-% \include{Chapter9/Chapter9}
+%\include{Chapter9/Chapter9}
 % \include{Chapter10/Chapter10}
 
 \bibliographystyle{abbrv}
