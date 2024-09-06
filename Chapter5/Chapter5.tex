@@ -6,12 +6,12 @@ In this section, it is presented a series of experiments done in different RL en
 
 \section{Grid World - Episode Reward}
 
-Episode Reward and Cumulative Reward were initially chosen to indicate the performance during training of different DQN extensions. The full priority weighting (weight: 1.0) version was used for BPERcn and BPERaa alternatives, such that it only prioritizes with bisimulation distances and not td-error. The algorithm was executed for 5 independent seed and the mean, min and max values (bottom and upper margin of shaded regions) per time steps are show in Figure \ref{fig:episode_cumulative_reward}. The methods DQN and DQN + MICO work as baseline to compare all othe methods. 
+Episode Reward and Cumulative Reward were initially chosen to indicate the performance during training of different DQN extensions. The full priority weighting (weight: 1.0) version was used for BPERcn and BPERaa alternatives, such that it only prioritizes with bisimulation distances and not td-error. The algorithm was executed for 5 independent executions and the mean, min and max values (bottom and upper margin of shaded regions) per time steps are show in Figure \ref{fig:episode_cumulative_reward}. The methods DQN and DQN + MICO work as baseline to compare all other methods. 
 
 
-Figure \ref{fig:episode_reward_grid_world} illustrates the episode reward per time steps during training, calculated in a 100 steps average window. While all methods show an improvement over time, converging after 100k steps, both BPERcn and BPERaa show promising improvements early in the training process, obtaining better performance than baselines and PER extension. However, over time, BPERaa keeps more consistent and stable improvements, indicating a better manage of priorities in the experience replay, while BPERcn shows a decrease of performance after the time step 25k. This suggest that a smoother the relative strategy 2, BPERaa, could in fact be beneficial in practice. Additionally, even though the GridWorld is a simple environment, the PER alternative under performs against all the other methods over time, showing the effectiveness of prioritizing behavioral dissimilar states.
+Figure \ref{fig:episode_reward_grid_world} illustrates the episode reward per time steps during training, calculated in a 100 steps average window. While all methods show an improvement over time, converging after 100k steps, both BPERcn and BPERaa show promising improvements early in the training process, obtaining better performance than baselines and PER extension. However, over time, BPERaa keeps more consistent and stable improvements, indicating a better manage of priorities in the experience replay, while BPERcn shows a decrease of performance after the time step 30k. This results suggest that the smoother relative strategy 2, BPERaa, could in fact be beneficial in practice. Additionally, even though the GridWorld is a simple environment, the PER alternative under performs against all the other methods over time, showing the effectiveness of prioritizing behavioral dissimilar states.
 
-The cumulative episode return in Figure \ref{fig:cumulative_episode_reward} helps us to check the ability to collect reward over time, a higher value will indicate a better ability to follow positive rewards. 
+The cumulative reward in Figure \ref{fig:cumulative_reward} helps us to check the overall time collected reward, a higher value will indicate a better ability to follow actions that leads to positive rewards. This complementary information indicates us that BPERaa in fact produces a policy that collect higher rewards, increasing the performance over the direct baseline DQN + MICO, which effectively show us that BPERaa is in fact making a positive effect in improving DQN + MICO. Alternatively, the other strategy, BPERcn, shows improvements in the earlier stages of learning, but eventually start decreasing the performance (around the 50k step) making the DQN + MICO reward acquisition worse, but keeping a similar performance that the baseline DQN. Overall, the PER alternative is the worse having difficulties to collect the rewards and in fact hindering the learning of the baseline DQN. 
 
 \begin{figure}[h]
     \centering
@@ -27,28 +27,63 @@ The cumulative episode return in Figure \ref{fig:cumulative_episode_reward} help
         \label{fig:cumulative_reward}
     \end{subfigure}
     \caption[Episode and Cumulative Reward]{\textbf{Episode and Cumulative Reward.} Reward performance comparison for different methods over time. The results represent the average from 5 independent executions, with shaded regions indicating the variability for each method.}
-    \label{fig:episode_cumulative_reward}
+    \label{fig:cumulative_episode_reward}
 
 \end{figure}
+
+
+Exploring other perspective of the previous results, we proposed the episode reward gain to analyze more in detail the level of improvement of the proposed methods against our baselines (DQN and DQN + MICO). Figure \ref{fig:episode_reward_gain_dqn_and_mico} illustrates the Episode Reward gain on two different baselines, calculated on a window of 100 steps, and average over 5 independent executions. It is important to notice that only the mean values were used for the calculations. The results ratifies the excel improvements of BPERaa strategy over the other methods: BPERcn and PER againts both baselines, and showcases similar improvements of both bisimulation strategies in the earlier stages of the training. However, as mentioned before, this performance decreases in BPERcn around the step 30k. Under both baselines, the PER method underperform enormously by hinder the proper learning of the policy.
 
 \begin{figure}[h]
     \centering
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/episode_reward_gain_baseline_dqn.png}
         \caption{Baseline DQN}
-        \label{fig:on_policy_weighting}
+        \label{fig:episode_reward_gain_dqn}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/grid_world/episode_reward_gain_baseline_dqn_mico.png}
         \caption{Baseline DQN + MICO}
-        \label{fig:uniform_weighting}
+        \label{fig:episode_reward_gain_dqn_mico}
     \end{subfigure}
     \caption{Episode Reward Gain }
-    \label{fig:outdated_priorities}
+    \label{fig:episode_reward_gain_dqn_and_mico}
 \end{figure}
 
 \section{Task-agnostic Sampling}
+
+In this section, the intention is empirically demonstrate that the proposed method takes into account the behavior for prioritized samples efficiently. To do that, we require a way to quantitatively evaluated how many behavioral dissimilar transitions there are in the current experience replay. Specifically, the on-policy bisimulation recurrent operator $T_K^\pi$ for deterministic environments (see Equation \ref{eq:deterministic_on_policy_bisimulation_metric}) allow us to calculate exact on-policy bisimulation distances. Then, each transition in the experience replay can be associated with a exact bisimulation distance between the current and next state, effectively providing a behavioral value per transition, and allowing us to evaluate the level of behavioral similar or dissimilar transitions in an experience replay. 
+
+Figure \ref{fig:exact_bisimulation_distributions} illustrates the distribution over the exact current-next on-policy bisimulation distances in the experience replay over time. In the strategies BPERcn and BPERaa, the behavioral dissimilar transitions evolve to larger values than PER over time, clearly demonstrating how our method will prioritized more frequently those larger behavioral dissimilar transitions. As the BPERcn encourages highly dissimilar transition between the current and next states approximated in the loop, the results from Figure \ref{fig:exact_bisim_bpercn} are expected. However, a more interesting result is that despite of BPERaa prioritized the transition based on a relative priority to the current mini-batch, this second strategy is still able to prioritize dissimilar experience as efficiently as the strategy BPERcn (see Figure \ref{fig:exact_bisim_bperaa}).
+
+Another interesting result is that even though the method aims to prioritized highlight dissimilar transitions, Figures \ref{fig:exact_bisimulation_distributions} still show a lot of transitions with exact bisimilar distance close to zero, possible coming from the nature of the environment that contains highly similar states.
+
+This result suggest that despite of the td-error is an indicator of possible improvement over the q-values, this is not enough to define a the expected learning improving and in this scenario a notion of behavioral similarity works better as an indicator of expected learning improving.
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.32\textwidth}
+    \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_per.png}
+        \caption{DQN + PER}
+        \label{fig:exact_bisim_per}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_mico_bpercn.png}
+        \caption{DQN (MICO) + BPERcn}
+        \label{fig:exact_bisim_bpercn}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_mico_bperaa.png}
+        \caption{DQN (MICO) + BPERaa}
+        \label{fig:exact_bisim_bperaa}
+    \end{subfigure}
+    \caption{Two images side-by-side}
+    \label{fig:exact_bisimulation_distributions}
+\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -73,28 +108,7 @@ The cumulative episode return in Figure \ref{fig:cumulative_episode_reward} help
     \label{fig:outdated_priorities}
 \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}{0.32\textwidth}
-    \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_per.png}
-        \caption{DQN + PER}
-        \label{fig:on_policy_weighting}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_mico_bpercn.png}
-        \caption{DQN (MICO) + BPERcn}
-        \label{fig:uniform_weighting}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.32\textwidth}
-        \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_mico_bperaa.png}
-        \caption{DQN (MICO) + BPERaa}
-        \label{fig:uniform_weighting}
-    \end{subfigure}
-    \caption{Two images side-by-side}
-    \label{fig:outdated_priorities}
-\end{figure}
+
 
 \begin{figure}[h]
     \centering
