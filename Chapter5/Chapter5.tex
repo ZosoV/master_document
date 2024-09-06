@@ -55,12 +55,11 @@ Exploring other perspective of the previous results, we proposed the episode rew
 
 In this section, the intention is empirically demonstrate that the proposed method takes into account the behavior for prioritized samples efficiently. To do that, we require a way to quantitatively evaluated how many behavioral dissimilar transitions there are in the current experience replay. Specifically, the on-policy bisimulation recurrent operator $T_K^\pi$ for deterministic environments (see Equation \ref{eq:deterministic_on_policy_bisimulation_metric}) allow us to calculate exact on-policy bisimulation distances. Then, each transition in the experience replay can be associated with a exact bisimulation distance between the current and next state, effectively providing a behavioral value per transition, and allowing us to evaluate the level of behavioral similar or dissimilar transitions in an experience replay. 
 
-Figure \ref{fig:exact_bisimulation_distributions} illustrates the distribution over the exact current-next on-policy bisimulation distances in the experience replay over time. In the strategies BPERcn and BPERaa, the behavioral dissimilar transitions evolve to larger values than PER over time, clearly demonstrating how our method will prioritized more frequently those larger behavioral dissimilar transitions. As the BPERcn encourages highly dissimilar transition between the current and next states approximated in the loop, the results from Figure \ref{fig:exact_bisim_bpercn} are expected. However, a more interesting result is that despite of BPERaa prioritized the transition based on a relative priority to the current mini-batch, this second strategy is still able to prioritize dissimilar experience as efficiently as the strategy BPERcn (see Figure \ref{fig:exact_bisim_bperaa}).
+Figure \ref{fig:exact_bisimulation_distributions} illustrates the distribution over the exact current-next on-policy bisimulation distances in the experience replay over time. In the strategies BPERcn and BPERaa, the behavioral dissimilar transitions evolve to larger values than PER over time, specifically exact bisimulation distance higher than 30 and between 15 and 20 are more frequent in the experience replay. It clearly demonstrates how our method will prioritized more frequently those larger behavioral dissimilar transitions. As the BPERcn encourages highly dissimilar transition between the current and next states approximated in the loop, the results from Figure \ref{fig:exact_bisim_bpercn} are expected. However, a more interesting result is that despite of BPERaa prioritized the transition based on a relative priority to the current mini-batch, this second strategy is still able to prioritize dissimilar experience as efficiently as the strategy BPERcn (see Figure \ref{fig:exact_bisim_bperaa}).
 
-Another interesting result is that even though the method aims to prioritized highlight dissimilar transitions, Figures \ref{fig:exact_bisimulation_distributions} still show a lot of transitions with exact bisimilar distance close to zero, possible coming from the nature of the environment that contains highly similar states.
+Another interesting result is that even though the methods aim to prioritized highlight dissimilar transitions, Figures \ref{fig:exact_bisimulation_distributions} still show a lot of transitions with exact bisimilar distance close to zero, possible coming from the nature of the environment that contains highly similar states. Another thing that could be influenced this result is the use of a large buffer of 100000, we decided to chose this large buffer to contrast and check behaviors in a larger buffer.
 
-This result suggest that despite of the td-error is an indicator of possible improvement over the q-values, this is not enough to define a the expected learning improving and in this scenario a notion of behavioral similarity works better as an indicator of expected learning improving.
-
+We took this decision deliberitate because we wanted to test how the algorithms work under large scales circumstances which are more common in practice with state-of-the-art methods.
 
 \begin{figure}[h]
     \centering
@@ -85,30 +84,34 @@ This result suggest that despite of the td-error is an indicator of possible imp
     \label{fig:exact_bisimulation_distributions}
 \end{figure}
 
+Consequently, Figure \ref{fig:priority_distributions} illustrates the evolution of priority distributions on the experience replay over time. In Figure \ref{fig:priority_distribution_per}, the PER priorities are condense in low values close to zero over time, and with few larger priorities. Although there are some larger value priorities, as there are a large quantity of low priorities transition, they will weight the low td-error transition with higher probability. In other words, the largest number of lower priorities will work as whole bug priority, given more weight to those lower td-error transitions. PER in this escenario is counterproductive, making the learning worse.
+
+Figure \ref{priority_distribution_per} showcase the problems with the PER method, when trying to priorities 
+
 \begin{figure}[h]
     \centering
     \begin{subfigure}{0.32\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/priority_distribution_dqn_per.png}
         \caption{DQN + PER}
-        \label{fig:on_policy_weighting}
+        \label{fig:priority_distribution_per}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.32\textwidth}
         \includegraphics[width=\linewidth]{Results/grid_world/priority_distribution_dqn_mico_bpercn.png}
         \caption{DQN (MICO) + BPERcn}
-        \label{fig:uniform_weighting}
+        \label{fig:priority_distribution_bpercn}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.32\textwidth}
         \includegraphics[width=\linewidth]{Results/grid_world/priority_distribution_dqn_mico_bperaa.png}
         \caption{DQN (MICO) + BPERaa}
-        \label{fig:uniform_weighting}
+        \label{fig:priority_distribution_bperaa}
     \end{subfigure}
     \caption{Two images side-by-side}
-    \label{fig:outdated_priorities}
+    \label{fig:priority_distributions}
 \end{figure}
 
-
+This result suggest that despite of the td-error is an indicator of possible improvement over the q-values, this is not enough to define a the expected learning improving and in this scenario a notion of behavioral similarity works better as an indicator of expected learning improving.
 
 \begin{figure}[h]
     \centering
