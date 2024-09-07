@@ -178,7 +178,7 @@ Although the MICo loss $\mathcal{L}_{\text{MICo}}$ requires pairs of transitions
 
 In the following, we propose our method, \textbf{Bisimulation Prioritized Experience Replay (BPER)}, along with \textbf{two strategies} for calculating these priorities on the fly, based on certain hypotheses. As mentioned before, the MICo metric is approximated online as part of the state abstraction learning process, so that it is enough to use $U_\omega$ to calculate a MICo distance between two states and update the priorities accordingly.
 
-Another possible option for calculating the distance online is to use the target distance \(T^U_{\bar{\omega}}\), which uses the corresponding rewards difference. However, since the metric will eventually converge to a fixed point, it is sufficient and more convenient to use \(U_\omega\), as this approach does not require incorporating rewards into its calculation.
+Another possible option for calculating the distance online is to use the target distance \(T^U_{\bar{\omega}}\), which uses the corresponding rewards difference term. However, since the metric will eventually converge to a fixed point, it is sufficient and more convenient to use \(U_\omega\), as this approach does not require incorporating rewards into its calculation.
 
 % \subsubsection{Strategy 1: Current vs Next (BPERcn)}
 
@@ -264,6 +264,7 @@ Algorithm \ref{algorithm:dqn_bper} illustrates the entire prioritizing process. 
 \end{algorithm}
 
 \section{Experimentation Setup}
+\label{sec:experimental_setup}
 
 % \subsection{Experiments and Environments}
 The proposed method will be tested in two setups: 1) 31-state Grid Worlds illustrated in Figure \ref{fig:behavioral_similarity}; similar to those environment in the works of Pan et al. \cite{pan2022understanding} and Castro \cite{castro2020scalable}, where calculating the bisimulation metrics is relatively straightforward; and 2) the Classic Control benchmark suite\footnote{Classic Control benchmark: \href{https://www.gymlibrary.dev/environments/classic_control/}{https://www.gymlibrary.dev/environments/classic\_control/}}, and the Lunar Lander from the Box2D suite\footnote{Box2D suit benchmark: \href{https://gymnasium.farama.org/environments/box2d/}{https://gymnasium.farama.org/environments/box2d/}}. In these setups, states will be \textbf{partially observable derived from pixels}, rather than full descriptive states.
