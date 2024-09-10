@@ -2,28 +2,51 @@
 
 \chapter{Conclusion and Future Work}
 
-Even though it returns promising results, one thing that I realized is that the bisimulation values are relative too high compare with the td-errors, which can produce to focus too much in some experiences and unven and drastically skewness probability distribution, a way to soft the sampling distribution could be recommended. 
+\section{Conclusion}
 
-We have tried to normalize using a logaritmic scale and max min, but it didn't worked properly.
+In this work, we proposed a non-uniform sampling technique to sample transitions from an experience replay, named Bisimulaiton Prioritized Experience Replay (BPER) along with two possible strategies, such as current-vs-next (BPERcn) and the all-vs-all strategy (BPERaa). The proposed bisimulation based prioritization technique yields promising results, with particularly success in a GridWorld used to demonstrated the effectivenes of the method.
 
-Even when using the 0.01 beta in the loss function
+In the Grid World, the results demonstrated that the BPERcn and BPERaa strategies effectively address there key sampling problems, such as: task-sampling, outdated-priorities, and state space coverage. Several visual and quantities studies indicates that our proposal outperforms in each of these key points to all the other methods evaluated (DQN, DQN + PER, and DQN + MICO), proving the viability of our method.
 
-Theoretical proof
+In slightly more complex environment, however, the proposed approach is partially effective by consistently outperforming the direct baseline DQN + MICo, and outperforming DQN and DQN + PER only in special cases. 
 
-It lacks of a theoretical basis
+The method offers a potentially valuable approach for future applications, but its successful implementation will require careful consideration of certain factors. These include the structure of the environment, the nature of the reward function, and the dynamics of the action space. Further research is needed to explore these aspects in depth and to refine the method for broader applicability.
 
-also some experimetns suggest that most of the improvements comes from the MICO and not actually the prioritization
+\section{Future Work}
 
-a sweep over the alpha and beta values, although we use the best one for PER, they could not be the best ones for BPER
+The following are future directions for the current work:
 
-Additionally, a way to normalize the priorities or another sampling method like the rank based because the BPER priorities are larger than the td-error (ojo).
+\begin{itemize}
+    \item \textbf{Highly Skweness Sampling Probability Distributions.} The bisimulation values are high compare to the td-errors (see Figure \ref{fig:log_mean_batch_priority_methods}). Even though high priority values in a minibatch could be related to positive effects, to have very huge values assigned constantly is not a good sign. It can produce uneven and drastically skewness probability distributions overly weighting some experiences over others. A possible direction to diminish this problem is to use normalization techniques\footnote{We have tried to normalize using a logaritmic scale and max min, but it did not work properly.} or clipping techniques before assigning priorities; or sampling techniques, such as temperature-based sampling (used in LLMs \cite{jm3}), or rank-based sampling \cite{schaul2015prioritized}.
+    \item \textbf{Lack of Theoretical Guarantees.} The current work performs an empirical evaluation of the proposed method. However, it does not rely on a theoretical proof that provides guarantees that the algorithm will converge before some given steps. A future work should explore the development of a formal proof, we suggest to follow similar directions as the work of Pan et al. \cite{pan2022understanding}, where a formal proof for PER is provided.
+    \item \textbf{Prioritization Hyper-parameter Adjustments.} In the provided experiments, the best alpha $\alpha$ and beta $\beta$ hyperparameters that control the $\alpha$-probability and the weighted importance sampling for the PER \cite{schaul2015prioritized} method were used. However, although those parameter are the best for the PER method, they are not necesarrily the best for our approach. We to developed a sweep over these parameters to find the adequate setting for our approach.
+    \item \textbf{Benchmarks and Algorithms.} Similarly as MICO learning \cite{castro2021mico}, our proposed method work in a plug in fashion and can be adequated to different algorithms that employs an experience replay as part of the learning, such as Double DQN \cite{van2016deep}, DDPG \cite{lillicrap2015continuous}, SAC \cite{haarnoja2018soft}, etc. Additionally, in this work, we only test our approach in classical environments without taking into account relevant benchmark such as Atari Benchamark \cite{bellemare2013arcade, machado2018revisiting} or Mujocoo Benchmark \cite{todorov2012mujoco}. In future works, we can explore the performance of our proposal with these different state-of-the-art algorithms and benchmarks.
+    \item \textbf{Complex Environment to Evaluate.}
+    \item \textbf{Annealing Priority Weighting.}
+\end{itemize}
+
+
 
 Try Double DQN and other algorithms and better benchmarks.
 
 Check with more state of the art algorithms and methods
 
 
-We hypothesis that earlier improvement on BPERcn and BPERaa are more related with randomly picking different distant states in the beginning. However, over time as the metric is learn, the BPERaa because a better indicator of bisimilar transtion (or more informative transition), particularly for the scarce and highly variable approximatation mention in [], and the motive for what Strategy 2 was actually proposed.
+% We hypothesis that earlier improvement on BPERcn and BPERaa are more related with randomly picking different distant states in the beginning. However, over time as the metric is learn, the BPERaa because a better indicator of bisimilar transtion (or more informative transition), particularly for the scarce and highly variable approximatation mention in [], and the motive for what Strategy 2 was actually proposed.
+
+
+
+It seems aligned with what a bisimulation is based on, because inherently a bisimulation will use the structure of the rewards and transtitions to define a level of behavioral similarity.
+Specifically, we hypothesis that a environement with a smoother reward function (not sparse or binary) and several actions will be optimal to prioritized behavioral disimilar staes. 
+
+Specifically, because the theoretical basis leads to that tougth, it seems that the reward and transition equivalence terms in the MICO distance makes quite complex to learn behavioral states in simple scenarios were most of the states are quite similar in terms of actions and rewards. 
+
+Then, by having escenarios with a more variety of actions and rewards makes the problem easier and allow us to have a better approximation of the distance and consequently of the priorities assignated to each experience. 
+
+A open future work is to search complex environments were to evaluated more efficient the capabilities of this method. 
+
+
+Another advisable tweek is to proposed an annealing over the hyperparemeter because it seems to be more useful in the earlier steps than in the later steps.
 
 % VISA
 

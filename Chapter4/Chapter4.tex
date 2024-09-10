@@ -125,7 +125,7 @@ In the current work, we are interested in exploring these behaviors in terms of 
 %\subsection{On-policy MICO metric justification}
 \section{Bisimulation Prioritized Experience Replay}
 
-The previous example provides a method to calculate the on-policy bisimulation metric in deterministic MDPs and environments with a few states. However, in practice, we often encounter more complex environments with high-dimensional representations (e.g., pixels), where calculating on-policy bisimulation metrics in a tabular form becomes intractable.
+The previous example provides a method to calculate the on-policy bisimulation metric in deterministic MDPs and environments with few states. However, in practice, we often encounter more complex environments with high-dimensional representations (e.g., pixels), where calculating on-policy bisimulation metrics in a tabular form becomes intractable.
 
 To address these challenges, we employ an indirect approach to approximate these bisimulation metrics within the RL loop. Specifically, works by Zhang et al. \cite{zhang2020learning} and Castro et al. \cite{castro2021mico} have demonstrated that it is more effective and general to obtain a bisimulation metric as part of the online learning of state abstractions. In the following, we will detail the specific method for learning these abstractions and how this approach allows us to approximate the metric on the fly.
 
