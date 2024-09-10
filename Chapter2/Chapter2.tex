@@ -157,37 +157,37 @@ The complete algorithm is presented in Algorithm \ref{algorithm:dqn}. Note that 
 
 
 
-\begin{algorithm}
-\caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}
-\label{algorithm:dqn}
-\begin{algorithmic}[1]
-\State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, budget $T$ (total steps).
-\State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
-\State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
-\State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $\Delta = 0$
-% \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
-\For{$t = 1$ to $T$}
-    \State Observe $s_t$
-    \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
-    \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
-    \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$
-    \If{$t \equiv 0 \mod K$}
-        \For{$j = 1$ to $k$}
-            \State Sample transition $e_j \sim \text{Uniform}(\mathcal{D})$
-            \State Set $y_j = 
-            \begin{cases} 
-                r_j & \text{for terminal } s_{j+1}\\
-                r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
-            \end{cases}$
-            \State Compute TD-error $\delta_j = y_j - Q(s_j, a_j)$
-            \State Accumulate weight-change $\Delta \leftarrow \Delta + \delta_j \cdot \nabla_\theta Q(s_j, a_j)$
-        \EndFor
-        \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
-        \State Every C optimizing steps update $\theta^- \leftarrow \theta$
-    \EndIf
-\EndFor
-\end{algorithmic}
-\end{algorithm}
+% \begin{algorithm}
+% \caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}
+% \label{algorithm:dqn}
+% \begin{algorithmic}[1]
+% \State \textbf{Input:} minibatch $k$, step-size $\eta$, replay period $K$ and size $N$, budget $T$ (total steps).
+% \State \textbf{Initialize} action-value function $Q$ with random weights $\theta$
+% \State \textbf{Initialize} target action-value function $Q^-$ with weights $\theta^- = \theta$
+% \State \textbf{Initialize} replay memory $\mathcal{D} = \emptyset$ with capacity $N$, $\Delta = 0$
+% % \State Observe $s_0$ and choose $a_0 \sim \pi^\epsilon_\theta(s_0)$ 
+% \For{$t = 1$ to $T$}
+%     \State Observe $s_t$
+%     \State Choose action $a_t \sim \pi^\epsilon_\theta(s_t)$
+%     \State Execute action $a_t$ and observe $r_t$ and $s_{t+1}$
+%     \State Store transition $(s_t, a_t, r_t, s_{t+1})$ in $\mathcal{D}$
+%     \If{$t \equiv 0 \mod K$}
+%         \For{$j = 1$ to $k$}
+%             \State Sample transition $e_j \sim \text{Uniform}(\mathcal{D})$
+%             \State Set $y_j = 
+%             \begin{cases} 
+%                 r_j & \text{for terminal } s_{j+1}\\
+%                 r_j + \gamma \max_{a'} Q^-(s_{j+1}, a'; \theta^-) & \text{otherwise}
+%             \end{cases}$
+%             \State Compute TD-error $\delta_j = y_j - Q(s_j, a_j)$
+%             \State Accumulate weight-change $\Delta \leftarrow \Delta + \delta_j \cdot \nabla_\theta Q(s_j, a_j)$
+%         \EndFor
+%         \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
+%         \State Every C optimizing steps update $\theta^- \leftarrow \theta$
+%     \EndIf
+% \EndFor
+% \end{algorithmic}
+% \end{algorithm}
 
 \begin{algorithm}
 \caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}

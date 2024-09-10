@@ -2,18 +2,15 @@
 
 \chapter{Results and Discussion}
 
-In this section, it is presented a series of experiments done in different RL environments. Particularly, a 31-state simple GridWorld was used as proof of concept to analyze the efficient of our method by evaluating three keys problems in non-uniform sampling methods, such as task-agnostic sampling, outdated priorities, and state space coverage. After exploring these main issues, a general evaluation on slightly more complex was done to measure the performance of our algorithm in the RL scenario.
+This section presents a series of experiments conducted in different RL environments. A 31-state simple GridWorld was used as a proof of concept to analyze the efficiency of our method by evaluating three key problems in non-uniform sampling methods: task-agnostic sampling, outdated priorities, and state space coverage. After addressing these primary issues, a general evaluation was performed on slightly more complex environments to measure the performance of our algorithm in typical RL scenarios. This section integrates results with inline discussion to enhance clarity and understanding; however, an additional summary discussion is provided at the end to highlight the most relevant findings.
 
 \section{Grid World - Episode Reward}
+Episode Reward and Cumulative Reward were initially selected to assess the training performance of different DQN extensions. The full priority weighting (weight: 1.0) version was used for both BPERcn and BPERaa variants, such that prioritization is based solely on bisimulation distances, without considering TD-error\footnote{Additionally, a sweep over various priority weights (0.1, 0.25, 0.5, 0.75, and 1.0) was conducted, and the results are provided in Appendix \ref{}.}. We make that decision deliberately to contrast the methods under its strong . The algorithm was executed for 5 independent runs, with the mean, minimum, and maximum values (represented by the lower and upper margins of the shaded regions) shown per time step in Figure \ref{fig
+}. The methods DQN and DQN + MICo served as baseline methods for comparison.
 
-Episode Reward and Cumulative Reward were initially chosen to indicate the performance during training of different DQN extensions. The full priority weighting (weight: 1.0) version was used for BPERcn and BPERaa alternatives, such that it only prioritizes with bisimulation distances and not td-error\footnote{Additionally, a sweep over the priority weights: 0.1, 0.25, 0.5, 0.75 and 1.0 was done, and the results are shown in the Appendixes \ref{}}. The algorithm was executed for 5 independent executions and the mean, min and max values (bottom and upper margin of shaded regions) per time steps are show in Figure \ref{fig:episode_cumulative_reward}. The methods DQN and DQN + MICO work as baseline to compare all other methods. 
+Figure \ref{fig:episode_reward_grid_world} shows the episode reward per time step during training, calculated using a 100-episode moving average window. While all methods demonstrate improvement over time and converge after 100k steps, both BPERcn and BPERaa show promising improvements early in the training process, outperforming the baselines and the PER extension. However, as training progresses, BPERaa maintains more consistent and stable improvements, suggesting better management of priorities in experience replay, whereas BPERcn experiences a decrease in performance after 30k steps. These results indicate that the smoother relative strategy 2, BPERaa, could be more beneficial in practice. Additionally, although GridWorld is a simple environment, the PER alternative underperforms compared to all other methods, highlighting the effectiveness of prioritizing behaviorally dissimilar states.
 
-
-Figure \ref{fig:episode_reward_grid_world} illustrates the episode reward per time steps during training, calculated in a 100 steps average window. While all methods show an improvement over time, converging after 100k steps, both BPERcn and BPERaa show promising improvements early in the training process, obtaining better performance than baselines and PER extension. However, over time, BPERaa keeps more consistent and stable improvements, indicating a better manage of priorities in the experience replay, while BPERcn shows a decrease of performance after the time step 30k. This results suggest that the smoother relative strategy 2, BPERaa, could in fact be beneficial in practice. Additionally, even though the GridWorld is a simple environment, the PER alternative under performs against all the other methods over time, showing the effectiveness of prioritizing behavioral dissimilar states.
-
-The cumulative reward in Figure \ref{fig:cumulative_reward} helps us to check the overall time collected reward, a higher value will indicate a better ability to follow actions that leads to positive rewards. This complementary information indicates us that BPERaa in fact produces a policy that collect higher rewards, increasing the performance over the direct baseline DQN + MICO, which effectively show us that BPERaa is in fact making a positive effect in improving DQN + MICO. Alternatively, the other strategy, BPERcn, shows improvements in the earlier stages of learning, but eventually start decreasing the performance (around the 50k step) making the DQN + MICO reward acquisition worse, but keeping a similar performance that the baseline DQN. Overall, the PER alternative is the worse having difficulties to collect the rewards and in fact hindering the learning of the baseline DQN. 
-
-\begin{figure}[h]
+\begin{figure}[!h]
     \centering
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/episode_reward_grid_world_window_100.png}
@@ -28,13 +25,11 @@ The cumulative reward in Figure \ref{fig:cumulative_reward} helps us to check th
     \end{subfigure}
     \caption[Episode and Cumulative Reward]{\textbf{Episode and Cumulative Reward.} Reward performance comparison for different methods over time. The results represent the average from 5 independent executions, with shaded regions indicating the variability for each method.}
     \label{fig:cumulative_episode_reward}
-
 \end{figure}
 
+The cumulative reward, as shown in Figure \ref{fig:cumulative_reward}, indicates the total reward collected over time, which provides insight into the overall reward collection of each method. A higher cumulative reward indicates a better ability to select actions that lead to positive outcomes. The complementary results suggest that BPERaa produces a policy that consistently collects higher rewards, outperforming the direct baseline DQN + MICo, and demonstrating that BPERaa positively impacts DQN + MICo's performance. In contrast, the BPERcn strategy shows improvements in the early stages of learning but starts to decline around the 50k time step, reducing reward acquisition compared to DQN + MICo and eventually performing similarly to the baseline DQN. Overall, the PER method performs the worst, struggling to collect rewards and hindering the learning of the baseline DQN.
 
-Exploring other perspective of the previous results, we proposed the episode reward gain to analyze more in detail the level of improvement of the proposed methods against our baselines (DQN and DQN + MICO). Figure \ref{fig:episode_reward_gain_dqn_and_mico} illustrates the Episode Reward gain on two different baselines, calculated on a window of 100 steps, and average over 5 independent executions. It is important to notice that only the mean values were used for the calculations. The results ratifies the excel improvements of BPERaa strategy over the other methods: BPERcn and PER againts both baselines, and showcases similar improvements of both bisimulation strategies in the earlier stages of the training. However, as mentioned before, this performance decreases in BPERcn around the step 30k. Under both baselines, the PER method underperform enormously by hinder the proper learning of the policy.
-
-\begin{figure}[h]
+\begin{figure}[!h]
     \centering
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/episode_reward_gain_baseline_dqn.png}
@@ -51,15 +46,15 @@ Exploring other perspective of the previous results, we proposed the episode rew
     \label{fig:episode_reward_gain_dqn_and_mico}
 \end{figure}
 
+The episode reward gain, shown in Figure \ref{fig:episode_reward_gain_dqn_and_mico}, provides an alternative perspective for evaluating the improvement of the proposed methods relative to two baselines (DQN and DQN + MICo). Since the episode reward gain is the difference between the episode reward of a method and a baseline, a positive value indicates a better performance relative to the baseline. This evaluation metric is calculated using a moving average window of 100 episodes based on the mean episode reward previously shown in Figure \ref{fig:episode_reward_grid_world}. The results confirm the promising improvements of the BPERaa strategy over the other methods relative to both baselines. Both strategies, BPERaa and BPERcn, exhibit similar improvements in the early stages of training. However, the performance of BPERcn declines around the 30k step under both baselines. Interestingly, Figure \ref{fig:episode_reward_gain_dqn_mico} reveals a decreasing trend around the 50k step for the BPERaa method. Although the performance eventually recovers to match that of DQN + MICo, the decline suggests some instability. Under both baselines, the PER method significantly underperforms, hindering the effective learning of the policy.
+
+
+
 \section{Task-agnostic Sampling}
 
-In this section, the intention is empirically demonstrate that the proposed method takes into account the behavior for prioritized samples efficiently. To do that, we require a way to quantitatively evaluated how many behavioral dissimilar transitions there are in the current experience replay. Specifically, the on-policy bisimulation recurrent operator $T_K^\pi$ for deterministic environments (see Equation \ref{eq:deterministic_on_policy_bisimulation_metric}) allow us to calculate exact on-policy bisimulation distances. Then, each transition in the experience replay can be associated with a exact bisimulation distance between the current and next state, effectively providing a behavioral value indicator per transition, and allowing us to evaluate the level of behavioral similar or dissimilar transitions in an experience replay. 
+This section aims to empirically demonstrate that the proposed method efficiently prioritizes samples based on their behavioral relevance. To achieve this, the on-policy bisimulation recurrent operator $T_K^\pi$ for deterministic environments (see Equation \ref{eq:deterministic_on_policy_bisimulation_metric}) is employed to compute exact on-policy bisimulation distances, providing a quantitative evaluation. In the experience replay, each transition is associated with the exact on-policy bisimulation distance between the current and next state. This exact distance effectively serves as a behavioral value indicator per transition, and allow us to assess the degree of behavioral similar or dissimilar transitions in an experience replay by plotting their distributions over time. The reader must keep in mind that these exact distances differ from the approximated distances used in the BPERcn strategy; while the BPERcn provides approximate measures, the operator $T_K^\pi$ offers 'theoretical' exact distances\footnote{Note that the calculation of the exact on-policy bisimulation distances is only feasible in this toy example, where the true states are fully known. In practice, such information is typically not accessible.}.
 
-Figure \ref{fig:exact_bisimulation_distributions} illustrates the distribution over those exact current-next on-policy bisimulation distances in the experience replay over time, with the last distribution (100k) highlighted on top of the figure. In the strategies BPERcn and BPERaa, the behavioral dissimilar transitions evolve to larger values than PER over time, specifically exact bisimulation distance higher than 30 and between 15 and 20 are more frequent in the experience replay. It clearly demonstrates how our method will prioritized more frequently those larger behavioral dissimilar transitions. As the BPERcn encourages highly dissimilar transition between the current and next states approximated in the loop, the results from Figure \ref{fig:exact_bisim_bpercn} are expected. However, a more interesting result is that despite of BPERaa prioritized the transition based on a relative priority to the current mini-batch, this second strategy is still able to prioritize dissimilar experience as efficiently as the strategy BPERcn (see Figure \ref{fig:exact_bisim_bperaa}).
-
-Another interesting result is that even though the methods aim to prioritized highlight dissimilar transitions, Figures \ref{fig:exact_bisimulation_distributions} still show a lot of transitions with exact bisimilar distance close to zero, possible coming from the nature of the environment that contains highly similar states. Another thing that could be influenced this result is the use of a large buffer of 100000, set deliberately with a large capacity to contrast behaviors under large scales circumstances which are more common in practice with stated-of-the-art methods.
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{subfigure}{0.32\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/exact_bisimulation_dqn_per.png}
@@ -82,11 +77,14 @@ Another interesting result is that even though the methods aim to prioritized hi
     \label{fig:exact_bisimulation_distributions}
 \end{figure}
 
-Now, we have an understanding of the amount of behavioral dissimilar transition, and an interesting point to analyze is how much of those transitions in the replay actually corresponds to high priorities values. To check that, Figure \ref{fig:priority_distributions} illustrates the evolution of priority distributions on the experience replay over time, with the last distribution (100k) high-lighted on top. Figure \ref{fig:priority_distribution_per} indicates an accumulation of low values priorities over time in the PER method, and with few larger priorities. Even though most of the priorities values are really low, they all together can occupy a large priority area, prioritizing or weighting transitions with low td-error more frequently, and consequently hindering the DQN learning; explaining the defficient in episode reward explored in previous experiments.
 
-In contrast, both proposed strategies, BPERcn and BPERaa, generate consistently higher priorities over time, encouraging more behavioral dissimilar transitions. With BPERaa showing a slight higher variability in Figure \ref{fig:priority_distribution_bperaa}. Although these results do not associated dirrectly each priority value with the exact bisimulation distances mentioned before, it provides an idea of how many transition in the experience replay that are behavioral dissimilar are actually being prioritized over time.
+Figure \ref{fig:exact_bisimulation_distributions} illustrates the distribution of exact current-next on-policy bisimulation distances in the experience replay over time, with the final distribution (at 100k step) highlighted at the top of the figure. In both BPERcn and BPERaa strategies, the behavioral dissimilar transitions evolve to larger values compared to PER over time, specifically with exact bisimulation distance higher than 30 and between 15 and 20 more frequent in the experience replay. It clearly demonstrates how our method prioritizes more frequently those larger behavioral dissimilar transitions. As the BPERcn encourages highly dissimilar transition between the current and next states approximated during training, the results from Figure \ref{fig:exact_bisim_bpercn} are expected. However, a more interesting result is that despite of BPERaa prioritizes transitions based on relative priorities within the current mini-batch, this second strategy is still able to prioritize dissimilar experiences as efficiently as the strategy BPERcn (see Figure \ref{fig:exact_bisim_bperaa}).
 
-\begin{figure}[h]
+Another interesting result is that, despite the methods aiming to prioritize highly dissimilar transitions, Figure \ref{fig:exact_bisimulation_distributions} still shows a significant number of transitions with exact bisimulation distances close to zero. This outcome could be attributed to the nature of the environment, which contains many highly similar states. Additionally, this result may be influenced by the use of a large buffer size of 100 000, which was deliberately set to a high capacity to observe behavior under large-scale conditions; more common in state-of-the-art methods.
+
+Having established the distribution of behaviorally dissimilar transitions in the experience replay, the next step is to analyze how many of these transitions actually correspond to high priority values. To explore this, Figure \ref{fig:priority_distributions} illustrates the evolution of priority distributions in the experience replay over time, with the final distribution (at 100k steps) highlighted at the top.
+
+\begin{figure}[H]
     \centering
     \begin{subfigure}{0.32\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/priority_distribution_dqn_per.png}
@@ -109,25 +107,20 @@ In contrast, both proposed strategies, BPERcn and BPERaa, generate consistently 
     \label{fig:priority_distributions}
 \end{figure}
 
+Figure \ref{fig:priority_distribution_per} shows an accumulation of low priority values over time in the PER method, with relatively few higher priority values. Although those priority values are low close to zero, their combined effect can occupy a large portion of the probability area, resulting in transitions with low TD-error being sampled more frequently. This phenomenon hinders DQN learning and may explain the poor episode rewards observed in previous experiments. In contrast, both proposed strategies, BPERcn and BPERaa, consistently generate higher priority values over time, encouraging more behaviorally dissimilar transitions, compensating the accumulation of low priority values. Notably, BPERaa exhibits slightly greater variability in Figure \ref{fig:priority_distribution_bperaa}. Despite of BPERcn and BPERaa still exhibiting an accumulation of low priority values, their frequency is lower compared to the PER method. While these results do not directly associate each priority value with the exact bisimulation distances mentioned earlier, they provide insight into how many behaviorally dissimilar transitions in the experience replay are being prioritized over time.
 
-Later, Figure \ref{fig:quartiles_all_methods} show a qualitative visual inspection of the frames corresponding to the main quartiles priorities values in the experience replay in the time step 90k. The low quartiles (min, 25\%) corresponds to frames with low sampling probability, and higher quartiles (75\% and max) corresponds to frames with higher sampling probability. The top row corresponds to the current states and the bottom row corresponds to the next states in each transition. Figure \ref{algorithm:dqn_per} exhibits the aforementioned difficulties of PER method when trying to prioritized state transitions using the td-error. In the quartile 25\% transition, the algorithm assigns low value priority to a transition that reach the goal, while assign high priority in the quartile 75\% to a transition that gets stuck in the same position without reaching the goal; clearly leading to a low expected learning progress. On the contrary, the strategies BPERcn and BPERaa show a consistencies along the low quartiles by keeping lower priorities to transition that get stuck or going backwards with the goal, while keeping higher priorities to transition that moves towards the goal in the high quartiles. Notice, however, it seems to be small variances, specially in BPERcn where in the quartile 25\% we can see a lower transition probability assigned to a transition that leads towards the goal; suggesting scarce high priorities problems. For reference an additional visual inspection of the quartiles in the time step 50k is show in the Appendix \ref{}. 
-
-% Notice that we could allegate that the low prioritization of the two quartiles makes sense because they could be associated with a small td-error; however, this is not necessarily true. In fact, accorsing previous Figure \ref{fig:episode_reward_grid_world}, there is still room for learning in the time step 90k for the DQN + PER algorithm.
-
-\begin{figure}[h]
+\begin{figure}[p]
     \centering
     \begin{subfigure}{1.\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/quartiles_images_per.png}
         \caption{DQN + PER}
         \label{fig:quartiles_per}
     \end{subfigure}
-    \hfill
     \begin{subfigure}{1.\textwidth}
         \includegraphics[width=\linewidth]{Results/grid_world/quartiles_images_dqn_mico_bpercn.png}
         \caption{DQN (MICO) + BPERcn}
         \label{fig:quartiles_bpercn}
     \end{subfigure}
-    \hfill
     \begin{subfigure}{1.\textwidth}
         \includegraphics[width=\linewidth]{Results/grid_world/quartiles_images_dqn_mico_bperaa.png}
         \caption{DQN (MICO) + BPERaa}
@@ -137,15 +130,29 @@ Later, Figure \ref{fig:quartiles_all_methods} show a qualitative visual inspecti
     \label{fig:quartiles_all_methods}
 \end{figure}
 
-The results in this section suggest that despite of the td-error is an indicator of possible improvement over the q-values, this is not enough to define a proxy of the expected learning progress in special scenario, where a notion of behavioral similarity works better as an indicator of expected learning progress.
+\subsection{Visual Inspection}
+
+% Later, Figure \ref{fig:quartiles_all_methods} show a qualitative visual inspection of the frames corresponding to the main quartiles priorities values in the experience replay in the time step 90k. The low quartiles (min, 25\%) corresponds to frames with low sampling probability, and higher quartiles (75\% and max) corresponds to frames with higher sampling probability. The top row corresponds to the current states and the bottom row corresponds to the next states in each transition. 
+
+% Figure \ref{algorithm:dqn_per} exhibits the aforementioned difficulties of PER method when trying to prioritized state transitions using the td-error. In the quartile 25\% transition, the algorithm assigns low value priority to a transition that reach the goal, while assign high priority in the quartile 75\% to a transition that gets stuck in the same position without reaching the goal; clearly leading to a low expected learning progress. On the contrary, the strategies BPERcn and BPERaa show a consistencies along the low quartiles by keeping lower priorities to transition that get stuck or going backwards with the goal, while keeping higher priorities to transition that moves towards the goal in the high quartiles. Notice, however, it seems to be small variances, specially in BPERcn where in the quartile 25\% we can see a lower transition probability assigned to a transition that leads towards the goal; suggesting scarce high priorities problems. For reference an additional visual inspection of the quartiles in the time step 50k is show in the Appendix \ref{}. 
+
+
+Figure \ref{fig:quartiles_all_methods} provides a qualitative visual inspection of the frames corresponding to the main quartiles of priority values in the experience replay collected at the 90k time step. The lower quartiles (min and 25\%) represent frames with low sampling probabilities, while the higher quartiles (75\% and max) represent frames with higher sampling probabilities. The top row shows the current states, and the bottom row shows the next states for each transition.
+
+Figure \ref{fig:quartiles_per} illustrates the difficulties of the PER method when attempting to prioritize state transitions using the TD-error. In the 25\% quartile transition, the algorithm assigns a low priority to a transition that reaches the goal, while assigning a high priority in the 75\% quartile to a transition where the agent is stuck in the same position without reaching the goal, clearly resulting in low expected learning progress. In contrast, the BPERcn and BPERaa strategies, show in Figures \ref{fig:quartiles_bpercn}, \ref{fig:quartiles_bperaa}, demonstrate consistency in the lower quartiles by assigning lower priorities to transitions where the agent gets stuck or moves backward relative to the goal, while maintaining higher priorities for transitions that move towards the goal in the higher quartiles. However, the BPERcn method shows small variances in the 25\% quartile, where a lower priority is assigned to a transition that leads towards the goal, suggesting occasional \textbf{issues with assigning high priorities}. For reference, an additional visual inspection of the quartiles at the 50k time step is provided in Appendix \ref{}.
+
+
+
+% Notice that we could allegate that the low prioritization of the two quartiles makes sense because they could be associated with a small td-error; however, this is not necessarily true. In fact, accorsing previous Figure \ref{fig:episode_reward_grid_world}, there is still room for learning in the time step 90k for the DQN + PER algorithm.
+
 
 \section{Outdated Priorities}
 
-In this section, the intention is empirically demonstrate that the proposed method alleviate the oudated priorities method. Recall that the outdated priorities is a problem that happens due the way that the priorities are updated only in the current minibach, instead of updating the priorities in the whole experience replay or even better the whole state space. As we are not updating all the priorities, the priorities will be outdated leading to sampling probabilities with certain variabilities. In this experiment, we are measuring that level of variability by comparing the distance between the ideal priority distribution (when priorities are updated in the whole state space under the current policy) vs the approximated sampling priority of the experience replay, as mentioned in Section \ref{sec:experimental_setup}
+This section aims to empirically demonstrate that the proposed method alleviates the problem of outdated priorities. Recall that outdated priorities occur because priority updates are performed only on the current minibatch, rather than across the entire experience replay or, ideally, the whole state space. As a result, not all priorities are updated, leading to differences in sampling probability distributions. In this experiment, we measure this difference by comparing the distance between the ideal priority distribution (where priorities are updated across the entire state space under the current policy) and the approximated sampling priorities of the experience replay, as discussed in Section \ref{sec:experimental_setup}.
 
-Figures \ref{fig:priority_dist_distance_on_policy_weighting} and \ref{fig:priority_dist_distance_uniform_weighting} show the on-policy and uniform weighting schemes respectively for calculating the distance between the aforementioned distributions, taken in average over 5 independent executions over time. The PER method exhibits a higher distances over time than the strategies BPERcn and BPERaa; even showing less variability among executions. Although our method does not provides distances close to zero (such as Pan et al.'s work \cite{pan2022understanding}) indicating a perfect match between distributions, our method reduce and alleviate significantly the difference between the distributions without relying on extract model-based assumptions. 
+Figures \ref{fig:priority_dist_distance_on_policy_weighting} and \ref{fig:priority_dist_distance_uniform_weighting} show the on-policy and uniform weighting schemes respectively for calculating the distance between the ideal and approximated priority distributions,   averaged over 5 independent executions over time. The PER method exhibits greater distances over time than the BPERcn and BPERaa strategies, which also show less variability among executions. Although our method does not provides distances close to zero (such as Pan et al.'s work \cite{pan2022understanding}) indicating a perfect match between distributions, our method reduce and alleviate significantly the difference between the distributions without relying on model-based technique. 
 
-\begin{figure}[h]
+\begin{figure}[!h]
     \centering
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\linewidth]{Results/grid_world/on_policy_weighting_outdated_priorities.png}
@@ -164,11 +171,15 @@ Figures \ref{fig:priority_dist_distance_on_policy_weighting} and \ref{fig:priori
 
 \section{State Space Coverage}
 
-In this section, the intention is empirically evaluated that our approach address the state space coverage problem. The state coverage is related with the lack of visiting states because the experience replay only captures a given number of possible states. It is an exploration problem and we evaluated it accordingly.
+This section aims to empirically evaluate how our method addresses the state space coverage problem. The state space coverage problem arises from insufficient exploration, where the experience replay only captures a limited number of possible states, leading to suboptimal learning outcomes.
 
-Figure \ref{fig:visitation_distributions} shows the state visitation distribution on the 31-state Grid World, where cell values corresponds to the count of visiting those states. The results indicates that the strategies BPERcn and BPERaa indeed confer a better exploration on the environment by visiting all states more frequently; with BPERcn performing slightly better than BPERaa. The DQN + MICO baseline outperforms DQN, and DQN + PER methods, by increasing the exploration. However, although some of the exploration in BPERcn and BPERcn could be due to the MICO learning, the exploration increase in a larger scale with the inclusion of bisimulation prioritized technique. To evaluate a consistency of these results among different executions, we use the Visitation Entropy mentioned in Section \ref{sec:experimental_setup}. A high entropy indicates that visitation distributions is more dispersed, consequently working as a indicator of exploration. While higher the entropy, better the exploration. Figure \ref{fig:visitation_entropy} illustrates the visitation entropy calculated from the visitations counts and average over 5 independent executions over time. The results clearly showcases that BPERaa outperforms the other methods with a large and consistent entropy, while the BPERcn although initially performs efficiently its performance decays around the time step 30k. PER metod is the worse among all the methods. While the priorities are updated only in the current minibatch after every updating step, the results suggest that bisimulation strategies, specially BPERaa, are able to encourage more exploration in the environment without explicitly instructing the policy to explore more, such as $\epsilon$-policies or other techniques do.
+Figure \ref{fig:visitation_distributions} shows the state visitation distribution at the 90k time step in the 31-state Grid World, where cell values corresponds to the visit count per state. The results indicate that the strategies BPERcn and BPERaa visit more states more frequently compared to other methods, with BPERcn performing slightly better than BPERaa. Additionally, the DQN + MICO baseline outperforms DQN, and DQN + PER methods. While some of the increased exploration in BPERcn and BPERaa may be attributed to the MICo learning, the bisimulation prioritized technique further enhances exploration (relative to DQN + MICo) by significantly increasing the state visit counts, reaching values around 600.
 
-\begin{figure}[h]
+% To evaluate a consistency among different runs, the Visitation Entropy mentioned in Section \ref{sec:experimental_setup} is used. 
+Figure \ref{fig:visitation_entropy} illustrates the Visitation Entropy calculated from the visitations counts and average over 5 independent runs over time. A high entropy indicates that visitation distributions are more dispersed, consequently working as a indicator of exploration. While higher the entropy, better the exploration. The results clearly showcases that BPERaa outperforms the other methods with a large and consistent entropy, while the BPERcn although initially performs efficiently its performance decays around the time step 30k. PER method is the worse among all the methods. 
+
+
+\begin{figure}[H]
     \centering
     % Add horizontal space to center the first two subfigures
     \hspace*{\fill}
@@ -211,10 +222,9 @@ Figure \ref{fig:visitation_distributions} shows the state visitation distributio
     \label{fig:visitation_distributions}
 \end{figure}
 
-
-\begin{figure}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=1.\linewidth]{Results/grid_world/state_visitation_entropy.png}
+    \includegraphics[width=0.7\linewidth]{Results/grid_world/state_visitation_entropy.png}
     \caption{Caption}
     \label{fig:visitation_entropy}
 \end{figure}
@@ -222,21 +232,7 @@ Figure \ref{fig:visitation_distributions} shows the state visitation distributio
 
 \section{General RL Performance}
 
-After demonstrating the efficiency of the algorithm under three main problems found in the literature, we intend to explore the capabilities of the proposed method in slight complex methods. Figure \ref{fig:episode_reward_more_envs} illustrates the episode reward (100 episode window) calculated in four different environments: MountaiCar-v0, LunarLander-v1, CartPole-v1, and Acrobot-v1, average on 5 independent executions. The hyperparameter priority weight was set using the best values found\footnote{Note: There were not done an exhaustive grid search on the priority weight. Instead, the values were set following a trial and error approach, where we realized that in most of the cases when the bisimulation is no generally useful is better to set a smaller values to follow more a td-error priority}, 0.1 for Mountain Car and Cart Pole, and 1.0 for LunarLander and Acrobot. Please see Appendix \ref{} for experiments with prioritization weights 1.0 for Mountain Car and Cart Pole.
-
-Figure \ref{fig:episode_reward_mountaincarv0} explores the episode reward on Mountain Car environment, where the bisimulation techniques, BPERcn and BPERaa, outperforms the other methods, with considerable improvements over DQN + MICO baseline. Nonetheless, it is important to note that the weight is set to 0.1, such that most of the priority will come from the td-error, implying that the bisimulation distance could does not be a useful indicator of expected learning in this scenario with binary mostly negative rewards (refer to Appendix \ref{} for results with 1.0). 
-
-Figure \ref{fig:episode_reward_lunarlander} shows the episode reward on Lunar Lander. BPERcn and BPERaa show initially the best performance over all the methods. However, over time, the performance decreases affecting even the learning of the baseline DQN + MICO. Although, in general, the strategies outperforms the DQN and DQN + PER methods, the benefits seems to come more from the MICO learning than from the proposed strategies. 
-
-Figure \ref{fig:episode_reward_cartpolev1} shows the episode reward on CartPole v1. In this environment, the variant PER is more consistent and outperforms the other in most of the cases. Although the BPERcn method achieves improvements over the direct baseline DQN + MICo, it does not outperforms the DQN baseline. Additionally, BPERaa outperforms both baseline DQN and DQN + MICo, but it is not better than the PER alternative. The results indicates that in this scenario the MICo learning is not producing a clear advantage over the other methods, it suggest that in this environment is complicated to discern between behavioral similar or dissimilar states due to the simple reward function and limited action space.
-
-Figure \ref{fig:episode_reward_acrobotv1} shows the episode reward on Acrobotv1. Although the overlapping results makes difficult to analyze results, the method BPERcn and BPERaa, initially show a better performance, and eventually all will converge to a similar behavior as DQN and DQN + MICO. On the other hand, the method PER shows the worse results over time. The overlapping results makes difficult to compare the methods in such way additionally episode rewards gains were provided.
-
-
-The results are quite mix, while in some escenarios is clearly to check an improvement for the proposed method in other we encounter poor results. These suggest that the effectiveness of our method is connected with the structure of the environment evaluated, specifically we hypothesis that a environement with a smoother reward function (not sparse or binary) and several actions will be optimal to prioritized behavioral disimilar staes. Specifically, because the theoretical basis leads to that tougth, it seems that the reward and transition equivalence terms in the MICO distance makes quite complex to learn behavioral states in simple scenarios were most of the states are quite similar in terms of actions and rewards. Then, by having escenarios with a more variety of actions and rewards makes the problem easier and allow us to have a better approximation of the distance and consequently of the priorities assignated to each experience. A open future work is to search complex environments were to evaluated more efficielty the capabilities of this method.
-
-
-An annealing over the hyperparemeter because it seems to be more useful in the earlier steps than in the later steps.
+This section aims to explore the capabilities of the proposed method in slightly more complex methods. Figure \ref{fig:episode_reward_more_envs} illustrates the episode reward calculated over a moving average window of 100 episodes in four different environments: MountainCar-v0, LunarLander-v1, CartPole-v1, and Acrobot-v1, averaged over 5 independent executions. The hyperparameter priority weight $\mu$ was set using the best values found\footnote{Note: An exhaustive grid search was not conducted for the priority weight $\mu$. Instead, the values were determined using a trial-and-error approach, where it was observed that when bisimulation is less generally useful, it is better to set smaller values to prioritize more based on TD-error.}, 0.1 for Mountain Car and CartPole, and 1.0 for LunarLander and Acrobot. Please see Appendix \ref{} for experiments with prioritization weights 1.0 for Mountain Car and Cart Pole.
 
 \begin{figure}[h]
     \centering
@@ -267,34 +263,53 @@ An annealing over the hyperparemeter because it seems to be more useful in the e
     \label{fig:episode_reward_more_envs}
 \end{figure}
 
+Figure \ref{fig:episode_reward_mountaincarv0} explores the episode reward in the Mountain Car environment, where the bisimulation techniques, BPERcn and BPERaa, outperforms the other methods, with considerable improvements over DQN + MICO baseline. It is important to note that the priority weight is set to 0.1, meaning that most of the prioritization is influenced by the TD-error. This suggests that the bisimulation distance may not be a useful indicator of expected learning progress in this scenario, where the rewards are mostly binary and negative (refer to Appendix \ref{} for results with priority weight 1.0).
+
+Figure \ref{fig:episode_reward_lunarlander} shows the episode reward in the Lunar Lander environment. BPERcn and BPERaa show initially the best performance over all the methods. However, over time, their performance decreases affecting even the learning of the DQN + MICO baseline. Although both strategies outperforms the DQN and DQN + PER methods, the observed benefits appear to derive more from the MICo learning than from the proposed prioritization strategies [Disclaimer\footnote{During our observations, the methods typically outperform the direct baseline DQN + MICo, even when DQN + MICo does not perform better than DQN. However, in this specific instance, a different behavior was observed. Upon revisiting the code and hyperparameter settings, we found a typo where the bisimulation priorities were incorrectly normalized using a logarithmic scale only for this experiment, which could explain the observed issue. These results are provided for reference, but future work should aim to redo this experiment to ensure accuracy.}].
+
+Figure \ref{fig:episode_reward_cartpolev1} shows the episode reward in the CartPole v1 environment. In this scenario, the PER variant is more consistent and outperforms the other methods in most cases. Although the BPERcn and BPERaa alternatives achieve improvements over the direct baseline DQN + MICo, they do not surpass the performance of the DQN baseline. Particularly, DQN + MICo performs worse than DQN, suggesting that in this environment, MICo learning does not provide a clear advantage. This may be due to the difficulty in distinguishing between behaviorally similar or dissimilar states, given the simple reward function (a reward of 1 for each time step) and the limited action space (two actions: left and right). Consequently, it is expected that the BPERcn and BPERaa strategies underperform compared to the other methods. The BPERaa strategy only briefly outperforms the other methods around the 80k time step, but its training is unstable, leading to a subsequent decline in episode reward.
+
+Figure \ref{fig:episode_reward_acrobotv1} shows the episode reward in the Acrobot-v1 environment. In this scenario, BPERcn and BPERaa methods initially demonstrate better performance than the other methods, and they eventually converge to a similar behavior as DQN and DQN + MICo. In contrast, the PER method shows the worst performance over time; even worse than the DQN baseline. Nonetheless, it is important to note that the overlapping results make it challenging to differentiate between the methods; therefore, additional episode reward gains are provided for a clearer analysis bellow.
+
 \begin{figure}[h]
     \centering
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\linewidth]{Results/general_results/mountain_car_reward_gain_vs_dqn.png}
         \caption{MountainCar-v0}
-        \label{fig:on_policy_weighting}
+        \label{fig:mountain_car_reward_gain_vs_dqn}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/general_results/lunarlander_reward_gain_vs_dqn.png}
         \caption{LunarLander-v1}
-        \label{fig:uniform_weighting}
+        \label{fig:lunarlander_reward_gain_vs_dqn}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/general_results/cart_polev1_reward_gain_vs_dqn.png}
         \caption{CartPole-v1}
-        \label{fig:uniform_weighting}
+        \label{fig:cart_polev1_reward_gain_vs_dqn}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/general_results/acrobotv1_reward_gain_vs_dqn.png}
         \caption{Acrobot-v1}
-        \label{fig:uniform_weighting}
+        \label{fig:acrobotv1_reward_gain_vs_dqn}
     \end{subfigure}
     \caption{Two images side-by-side}
-    \label{fig:outdated_priorities}
+    \label{fig:reward_gain_vs_dqn_methods}
 \end{figure}
+
+Figure \ref{fig:reward_gain_vs_dqn_methods} illustrates the episode reward gain relative to the DQN baseline for the three prioritization extensions: PER, BPERcn, and BPERaa, measured in moving average window of 100 episodes, using the equation mentioned in Section \ref{sec:experimental_setup}. r. Notice, in Figure \ref{fig:acrobotv1_reward_gain_vs_dqn}, it is better appreciated the slight improvements of bisimulation strategies over the baseline DQN, which is not possible to observed in episode reward plots. Cartpole v1 results, however, shows a highly variable episode reward gain for our method, BPERcn and BPERaa, and predominant values for the method PER, which is mostly positive over time. An additional evaluation relative to the DQN + MICo baseline is shown for reference in the Appendix \ref{}.
+
+Figure \ref{fig:reward_gain_vs_dqn_methods} illustrates the episode reward gain relative to the DQN baseline for the three prioritization extensions: PER, BPERcn, and BPERaa; measured using a moving average window of 100 episodes, as described in Section \ref{sec:experimental_setup}. Mountain Car, Lunar Lander, and Acrobot-v1 results show that the bisimulation strategies, BPERcn, and BPERaa, obtain mostly positive episode reward gains over time compare to PER alternatives, confirming the findings mentioned earlier. Notice, in Figure \ref{fig:acrobotv1_reward_gain_vs_dqn}, the slight improvements of the bisimulation strategies over the baseline DQN are more clearly observed, which were not evident in the episode reward plots. However, the CartPole-v1 results reveal a highly variable episode reward gain for the BPERcn and BPERaa methods, with predominantly positive values for the PER method over time. An additional evaluation relative to the DQN + MICo baseline is shown for reference in the Appendix \ref{}.
+
+Table \ref{tab:comparison_methods} summarizes the episode reward gains for each method and baseline, presenting the mean and standard deviation over all time steps for each environment. The BPERaa strategy shows the best performance on both the DQN and DQN + MICo baselines in the Acrobot and LunarLander environments, while BPERcn performs best on Mountain Car, and the PER method is most effective on CartPole-v1. It is important to note that the results are highly variable, especially in more complex environments like LunarLander, where the standard deviations reach 185.015 and 191.315 for the DQN and DQN + MICo baselines, respectively. %This indicates significant variability in improvements over time. It is advisable to use another metric to measure the performance, such as the total sum episode reward gain, instead of the mean.
+
+%It may be advisable to use an alternative metric, such as the total sum of episode reward gain, rather than the mean, to measure performance more effectively.
+
+
+
 
 
 % \begin{table}[h]
@@ -314,6 +329,7 @@ An annealing over the hyperparemeter because it seems to be more useful in the e
 %     \end{tabular}
 % \end{table}
 
+
 \begin{table}[h]
     \hspace*{-1cm}
     \setlength{\tabcolsep}{2.5pt}
@@ -331,34 +347,62 @@ An annealing over the hyperparemeter because it seems to be more useful in the e
         \bottomrule
     \end{tabular}
     \caption{Performance Comparison of Different DQN Variants}
-    \label{tab:dqn_comparison_transposed}
+    \label{tab:comparison_methods}
 \end{table}
+
+\subsection{Mean Batch Priority}
+
+% The increasing complexity of environments makes difficult to calculate prioritization distributions for a better detail evaluation; it is impractical to measure bisimulation distributions in a large experience replay with high-dimensional stacked states. However, it is still possible to have a glimpse appreciation of the priority values by studying the average priority in each minibatch sampled during training. Specifically, Figure \ref{fig:log_mean_batch_priority_methods} illustrates the log mean batch priority per method over time, averaged over 5 independent executions. Notice the log scale was used to compare the methods because bisimulation distances and td-errors could vary by some orders of magnitude, and both can reach large values over time. In all environments, the BPERcn and BPERaa methods consistently have large priority values on average than the PER method. This result have different interpretations: (1) a large value could indicate an efficient prioritization because the algorithmn over the sampled mini-batches will contain experiences with high priorities values effectively increasing the average priority in the mini batch over time, (2) a large value could indicate a saturated case scenario, where only few priorities are highly prioritized over the others avoiding a correct diversity in data. 
+
+% According to the previous results in episode reward, it seems to be a mix of both depending the case. For examples, in environments such as LunarLander and Mountain and Acrobot although initially present a increasing episode reward over time the reward is reduced a bit reaching similar results to DNQ + MICO, indicating that the algorithm is following in the second scenario. However, results from Mountain Car and Cart Pole indicate an increasing performance over the DQN + MICo baseline; falling in the first scenaro\footnote{Notice even in the cases with priority weight 1.0. This increasing behavior over DQN + MICo is presented even if in those scanario MICO learning does not increase the DQN performance.}.
+
+The increasing complexity of environments makes it difficult to calculate prioritization distributions for a more detailed evaluation; it is impractical to measure bisimulation distributions in a large experience replay with high-dimensional stacked states. However, it is still possible to gain some insight into the priority values by studying the average priority in each minibatch sampled during training. Figure \ref{fig:log_mean_batch_priority_methods} illustrates the log mean batch priority per method over time, averaged over 5 independent executions. A logarithmic scale was used to compare the methods because bisimulation distances and TD-errors can vary by several orders of magnitude, and both can reach large values over time. In all environments, the BPERcn and BPERaa methods consistently exhibit higher average priority values compared to the PER method.
+
+This result can be interpreted in two ways: (1) A high average priority value might indicate efficient prioritization, where the sampled minibatches contain experiences with high priority values, effectively increasing the average priority over time; (2) A high average priority value could also suggest a saturated scenario, where only a few experiences are highly prioritized, potentially reducing diversity in the data. According to the previous results for episode reward in Figure \ref{fig:episode_reward_more_envs}, both interpretations seem relevant depending on the environment. For example, in environments such as LunarLander and Acrobot, although there is an initial increase in episode reward, performance eventually declines to levels similar to DQN + MICo, suggesting that the algorithm is likely falling into the second scenario. Conversely, results from Mountain Car and CartPole indicate sustained performance improvements over the DQN + MICo baseline, aligning with the first scenario\footnote{Note this improvement over DQN + MICo is observed even with a priority weight of 1.0, where, although MICo learning does not enhance DQN performance, the BPERaa and BPERcn methods still outperform DQN + MICo.}.
 
 \begin{figure}[h]
     \centering
     \begin{subfigure}{0.45\textwidth}
     \includegraphics[width=\linewidth]{Results/general_results/log_mean_batch_priority_mountain_car.png}
         \caption{MountainCar-v0}
-        \label{fig:on_policy_weighting}
+        \label{fig:log_mean_batch_priority_mountain_car}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/general_results/log_mean_batch_priority_lunarlander.png}
         \caption{LunarLander-v1}
-        \label{fig:uniform_weighting}
+        \label{fig:log_mean_batch_priority_lunarlander}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/general_results/log_mean_batch_priority_cartpolev1.png}
         \caption{CartPole-v1}
-        \label{fig:uniform_weighting}
+        \label{fig:log_mean_batch_priority_cartpolev1}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\linewidth]{Results/general_results/log_mean_batch_priority_acrobot.png}
         \caption{Acrobot-v1}
-        \label{fig:uniform_weighting}
+        \label{fig:log_mean_batch_priority_acrobot}
     \end{subfigure}
     \caption{Two images side-by-side}
-    \label{fig:outdated_priorities}
+    \label{fig:log_mean_batch_priority_methods}
 \end{figure}
+
+\section{Summary Discussion}
+
+The results are quite mix, while in some escenarios is clearly to check an improvement for the proposed method in other we encounter poor results. These suggest that the effectiveness of our method is connected with the structure of the environment evaluated, specifically we hypothesis that a environement with a smoother reward function (not sparse or binary) and several actions will be optimal to prioritized behavioral disimilar staes. Specifically, because the theoretical basis leads to that tougth, it seems that the reward and transition equivalence terms in the MICO distance makes quite complex to learn behavioral states in simple scenarios were most of the states are quite similar in terms of actions and rewards. Then, by having escenarios with a more variety of actions and rewards makes the problem easier and allow us to have a better approximation of the distance and consequently of the priorities assignated to each experience. A open future work is to search complex environments were to evaluated more efficient the capabilities of this method. 
+
+Another advisable tweek is to proposed an annealing over the hyperparemeter because it seems to be more useful in the earlier steps than in the later steps.
+
+The results from task-agnostic sampling section suggest that despite of the td-error is an indicator of possible improvement over the q-values, this is not enough to define a proxy of the expected learning progress in special scenario, where a notion of behavioral similarity works better as an indicator of expected learning progress.
+
+Outdated Priorities the method is able to reduce alleviate the outdated problems even when the updates still happen only in the current minibatch and the same happens with the exploration
+
+
+While the priorities are updated only in the current minibatch after every updating step, the results suggest that bisimulation strategies, specially BPERaa, are able to encourage more exploration in the environment without explicitly instructing the policy to explore more, such as $\epsilon$-policies or other techniques do.
+
+
+It is advisable to use another metric to measure the performance, such the sum episode gain, instead the mean. form the table
+
+Whatever is the case, what is true is that the bi-simulations priorities confer high values early during training, which could eventually produces instabilities. In such way, it is advisable for future works to explore alternatives for dealing with large values, such as normalization techniques or use rank based prioritization (Schaul et al. \cite{schaul2015prioritized}).
