@@ -4,6 +4,7 @@
 This section outlines the methodology used in the present work by walking through a motivating example that revisits the bisimulation definitions from Section \ref{sec:bisimulation_background} to illustrate why our method is feasible and effective. Following this, we define our proposed method and provide a detailed explanation of the algorithm used in practice.
 
 \section{A Motivating Example: Grid World}
+\label{sec:motivating_example}
 
 The Grid World is a simple toy example (see Figure \ref{fig:grid_world}), with the following properties in terms of a MDP (See Section \ref{sec:mdp_definition}):
 
@@ -120,7 +121,23 @@ By applying a Multidimensional Scaling algorithm to the final fixed point distan
 
 % The \textbf{Reward Equivalence}, corresponding to the Equation \ref{eq:reward_equivalence}, corresponds to analyze all the possible transitions between state $s_i$ and $s_j$
 
-In the current work, we are interested in exploring these behaviors in terms of the experiences stored in the experience replay. Note that an experience tuple is defined as \(e_t = (s_t, a_t, r_t, s_{t+1})\). It is evident that experiences with a higher on-policy bisimulation distance between \(s_t\) and \(s_{t+1}\) are likely to be more informative (or 'surprising') than transitions between behaviorally similar states (see Figure \ref{}). By prioritizing transitions with greater behavioral differences, we encourage more diversity in the sampling process. This is the main idea behind our approach. Our method leverages these behavioral distance notions to promote more diverse sampling in the experience replay.
+In the current work, we are interested in exploring these behaviors in terms of the experiences stored in the experience replay. Note that an experience tuple is defined as \(e_t = (s_t, a_t, r_t, s_{t+1})\). It is evident that experiences with a higher on-policy bisimulation distance between \(s_t\) and \(s_{t+1}\) are likely to be more informative (or 'surprising') than transitions between behaviorally similar states (see Figure \ref{fig:current_vs_next}). By prioritizing transitions with greater behavioral differences, we encourage more diversity in the sampling process. This is the main idea behind our approach. Our method leverages these behavioral distance notions to promote more diverse sampling in the experience replay.
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\linewidth]{Figures/curr_vs_next.jpg}
+        \caption{Current-vs-Next Strategy (BPERcn)}
+        \label{fig:current_vs_next}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\linewidth]{Figures/all_vs_all.jpg}
+        \caption{All-vs-All Strategy (BPERaa)}
+        \label{fig:all_vs_all}
+    \end{subfigure}
+    \caption[Bisimulation Prioritization Strategies]{\textbf{Bisimulation Prioritization Strategies.} TODO}
+    \label{fig:bper_strategies}
+\end{figure}
 
 %\subsection{On-policy MICO metric justification}
 \section{Bisimulation Prioritized Experience Replay}
@@ -159,17 +176,37 @@ Consequently, the recursive nature of the operator \(T_M^\pi(U)(x,y)\) is used t
 
 where \(\bar{\omega}\) is a separate copy of the network parameters, synchronized with \(\omega\) at infrequent intervals, and the pairs of transitions \(\left\langle x, r_x, x^{\prime}\right\rangle\) and \(\left\langle y, r_y, y^{\prime}\right\rangle\) are sampled from the experience replay.\footnote{The actions are not considered in the experiences because we assume a fixed policy under the on-policy assumption.} \footnote{When distances are large, they can oversaturate the MICo loss, causing instability in gradient updates. Therefore, in practice, a Huber loss is employed to focus on small differences between states.}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/latent_space.jpg}
+    \caption[MICo Latent Space]{\textbf{MICo Latent Space.} TODO}
+    \label{fig:latent_space}
+\end{figure}
+
 The MICO learning can be integrated into any value-based agent by learning an estimate $Q_{\xi, \omega}(x, \cdot) = \psi_\xi(\phi_\omega(x))$, where $\phi_\omega(x)$ corresponds to the representation of state $x$, and $\psi_\xi$ corresponds to the value approximator. This work specifically focuses on the DQN algorithm (see Section \ref{sec:dqn}), where the $Q_{\xi, \omega}$ corresponds to the Q-values. In this scenario, the MICO loss $\mathcal{L}_{\text{TD}}$ is combined with the temporal-difference loss $\mathcal{L}_{\text{MICo}}$ as 
 \begin{equation}
     \mathcal{L}_\alpha(\xi, \omega) = (1 - \alpha)\mathcal{L}_{\text{TD}}(\xi, \omega) + \alpha \mathcal{L}_{\text{MICo}}(\omega)
 \end{equation}
 , where $\alpha \in (0, 1)$. 
-Figure \ref{} illustrates the network architecture used for learning, showing that the MICo loss is applied directly after the convolution layers and used to calculate the total loss $\mathcal{L}_\alpha$. Note that the same parameters $\omega$ are shared for both losses and both inputs, without the need for additional parameters.
+Figure \ref{fig:mico_learning} illustrates the network architecture used for learning, showing that the MICo loss is applied after the convolution layers and used to calculate the total loss $\mathcal{L}_\alpha$. Note that the same parameters $\omega$ are shared for both losses and both inputs, without the need for additional parameters.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/mico_learning.jpg}
+    \caption[MICo Learning]{\textbf{MICo Learning.} TODO}
+    \label{fig:mico_learning}
+\end{figure}
 
 % Additionally, notice the network are identical for both only the inputs are different. In such way, no extract parameters are used to learn the representation
 
-Although the MICo loss $\mathcal{L}_{\text{MICo}}$ requires pairs of transitions $\left\langle x, r_x, x^{\prime}\right\rangle$ and $\left\langle y, r_y, y^{\prime}\right\rangle$, in practice, transitions are not sampled as pairs; we only have access to a mini-batch of unpaired transitions, necessitating a method to pair them. To address this issue, a \textbf{squarify} method \cite{castro2020scalable} was proposed to construct pairs of transitions by pairing each transition with all others within the current mini-batch and then calculating the MICo loss. Figure \ref{} illustrates how this squarify process works.
+Although the MICo loss $\mathcal{L}_{\text{MICo}}$ requires pairs of transitions $\left\langle x, r_x, x^{\prime}\right\rangle$ and $\left\langle y, r_y, y^{\prime}\right\rangle$, in practice, transitions are not sampled as pairs; we only have access to a mini-batch of unpaired transitions, necessitating a method to pair them. To address this issue, a \textbf{squarify} method \cite{castro2020scalable} was proposed to construct pairs of transitions by pairing each transition with all others within the current mini-batch and then calculating the MICo loss. Figure \ref{fig:squarify} illustrates how this squarify process works.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/squarify.jpg}
+    \caption[Squarify Method]{\textbf{Squarify Method.} TODO}
+    \label{fig:squarify}
+\end{figure}
 
 % Then, the metric is used as part of a loss function to learn state abstractions.  Specifically, in this work, an encoder will map high-dimensional states (e.g., frames from an RL environment) into a lower-dimensional latent space, such that behaviorally similar states are kept closer together and behaviorally dissimilar states are kept farther apart in the latent space.
 
@@ -197,7 +234,7 @@ The distance \(U_\omega(s_i, s_{i+1})\) serves as an indicator of a 'surprising'
 Similar to a proportional prioritization in PER \cite{schaul2015prioritized} (see Section \ref{sec:per}), the sampling probability for an experience $e_i$ is given by $P(t) = \frac{p_t^\alpha}{\sum_k p_k^\alpha}$, where $\alpha$ controls the degree of prioritization. Additionally, the weighted importance sampling for unbiased updates is computed as $w_i = \left(\frac{1}{N} \cdot \frac{1}{P(i)} \right)^\beta$, followed by a normalization step $\frac{1}{\max_k w_k}$. In practice, a sum tree data structure is used to optimize the sampling procedure.
 % \subsubsection{Strategy 2: All vs All (BPERaa)}
 
-Strategy 1 provides a theoretical valid method to characterize the priority of transition based on a behavioral distance between the current and next state. However, in practice, the trajectories may overlap significantly, resulting in \textbf{overlapping states distributions} with highly similar behaviors. Additionally, since the bisimulation is approximated online, there are sources of variability in the approximation until reaching the convergence point. These issues can trigger trajectories with many similar distances between current and next states (see Figure \ref{}), with only a few behavioral different states appearing after long rollouts; resulting in scarce high-priority transitions, and consequently affecting the effectiveness of prioritization technique. To address these issues, the following empirical solution is proposed. 
+Strategy 1 provides a theoretical valid method to characterize the priority of transition based on a behavioral distance between the current and next state. However, in practice, the trajectories may overlap significantly, resulting in \textbf{overlapping states distributions} with highly similar behaviors. Additionally, since the bisimulation is approximated online, there are sources of variability in the approximation until reaching the convergence point. These issues can trigger trajectories with many similar distances between current and next states, with only a few behavioral different states appearing after long rollouts; resulting in scarce high-priority transitions, and consequently affecting the effectiveness of prioritization technique. To address these issues, the following empirical solution is proposed. 
 
 \begin{strategy}[\textbf{All vs All: BPERaa}]
 Consider a minibatch $B \subset \mathcal{E}$, $|B| = k$, with transition experiences $e_i = (s_i, r_i, a_i, s_{i+1})$. Each transition $e_i$ can be associated with a relative bisimulation distance
@@ -215,11 +252,13 @@ where \(\delta_i\) corresponds to the TD-error of the experience, \(\mu \in [0,1
 \end{strategy}
 
 
-Although the current states from different transitions are not directly connected by a valid transition, the bisimulation metric allows us to measure behavioral dissimilarity between all states in the environment. This enables the calculation of a behavioral distance relative to the current minibatch by computing the mean distance between each current state and all other states in the minibatch (see Figure \ref{}). This relative distance serves as a smoother indicator of how behaviorally dissimilar one initial state is compared to the others, indicating 'surprising' or more informative transitions. Figure \ref{} illustrates how the initial states of all transitions in the minibatch are positioned in the latent space, with more behaviorally distinct states placed farther apart. In practice, we use the squarify method, along with reshaping and averaging operations, to compute these distances on the fly. Similar as before, the $\alpha$-priority, weighted importance sampling and sum tree data structure are used for the sampling procedure.
+Although the current states from different transitions are not directly connected by a valid transition, the bisimulation metric allows us to measure behavioral dissimilarity between all states in the environment. This enables the calculation of a behavioral distance relative to the current minibatch by computing the mean distance between each current state and all other states in the minibatch (see Figure \ref{fig:all_vs_all}). This relative distance serves as a smoother indicator of how behaviorally dissimilar one initial state is compared to the others, indicating 'surprising' or more informative transitions. In practice, we use the squarify method, along with reshaping and averaging operations, to compute these distances on the fly. Similar as before, the $\alpha$-priority, weighted importance sampling and sum tree data structure are used for the sampling procedure.
+
+%Figure \ref{} illustrates how the initial states of all transitions in the minibatch are positioned in the latent space, with more behaviorally distinct states placed farther apart.
 
 Algorithm \ref{algorithm:dqn_bper} illustrates the entire prioritizing process. Similar to the PER method the priorities are only updated for the current sampled mini batch to maintain computational efficiency. Notice the algorithm depicts the procedure for Strategy 1 (BPERcn). Strategy 2 (BPERaa) requires a minor replacement in line 19, where \(U_\omega(s_i, s_{i+1})\) should be replaced with \(U^B_\omega(s_i)\). An additional algorithm illustrating only MICo learning with DQN, without BPER, is provided in Appendix \ref{} for reference.
 
-\begin{algorithm}
+\begin{algorithm}[h]
 \caption{DQN with Bisimulation Prioritized Experience Replay (BPERcn)}
 \label{algorithm:dqn_bper}
 \begin{algorithmic}[1]
@@ -249,15 +288,6 @@ Algorithm \ref{algorithm:dqn_bper} illustrates the entire prioritizing process. 
         \State Perform a gradient descent step on $\mathcal{L}_\alpha(\xi, \omega)$, weighting the updates by $w_j$
         \State Update transition priority $p_j \leftarrow (1 - \mu) |\delta_j| + \mu U_\omega(s_j,s_{j+1}) + \epsilon$
         \State Every C optimizing steps update $\{\bar{\xi},\bar{\omega}\} \leftarrow \{\xi, \omega\}$
-        
-
-        
-        % \State Accumulate weight-change $\Delta_{\{\xi, \omega\}} \leftarrow \Delta_{\{\xi, \omega\}} + w_j \cdot \delta_j \cdot \nabla_\theta Q(s_{j}, a_{j})$
-        % \State Compute bisimulation distance error $\sigma_j = T_{\bar{\omega}}^U\left(r_x, x^{\prime}, r_y, y^{\prime}\right)-U_\omega(x, y)$
-        %  \State Accumulate weight-change $\Delta_{\omega} \leftarrow \Delta_{\omega} + w_j \cdot \sigma_j \cdot \nabla_\omega U_\omega(s_{i}, a_{j})$   
-
-        % \EndFor
-        % \State Update weights $\theta \leftarrow \theta + \eta \cdot \Delta$, reset $\Delta = 0$
     \EndIf
 \EndFor
 \end{algorithmic}
@@ -267,7 +297,7 @@ Algorithm \ref{algorithm:dqn_bper} illustrates the entire prioritizing process. 
 \label{sec:experimental_setup}
 
 % \subsection{Experiments and Environments}
-The proposed method will be tested in two setups: 1) 31-state Grid Worlds illustrated in Figure \ref{fig:behavioral_similarity}; similar to those environment in the works of Pan et al. \cite{pan2022understanding} and Castro \cite{castro2020scalable}, where calculating the bisimulation metrics is relatively straightforward; and 2) the Classic Control benchmark suite\footnote{Classic Control benchmark: \href{https://www.gymlibrary.dev/environments/classic_control/}{https://www.gymlibrary.dev/environments/classic\_control/}}, and the Lunar Lander from the Box2D suite\footnote{Box2D suit benchmark: \href{https://gymnasium.farama.org/environments/box2d/}{https://gymnasium.farama.org/environments/box2d/}}. In these setups, states will be \textbf{partially observable derived from pixels}, rather than full descriptive states.
+The proposed method will be tested in two setups: 1) 31-state Grid Worlds illustrated in Figure \ref{fig:latent_space}; similar to those environment in the works of Pan et al. \cite{pan2022understanding} and Castro \cite{castro2020scalable}, where calculating the bisimulation metrics is relatively straightforward; and 2) the Classic Control benchmark suite\footnote{Classic Control benchmark: \href{https://www.gymlibrary.dev/environments/classic_control/}{https://www.gymlibrary.dev/environments/classic\_control/}}, and the Lunar Lander from the Box2D suite\footnote{Box2D suit benchmark: \href{https://gymnasium.farama.org/environments/box2d/}{https://gymnasium.farama.org/environments/box2d/}}. In these setups, states will be \textbf{partially observable derived from pixels}, rather than full descriptive states.
 
 The experiments aims to validate our proof of concept rather than test state-of-the-art results. Although the Grid Word is trained using pixels-based states, the underlying 31-state MDP enable us to measure evaluation metrics without high computational cost. Specifically, we will use the Grid World to evaluate our algorithm's performance on three key problems:
 

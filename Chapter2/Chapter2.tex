@@ -90,7 +90,8 @@ To achieve this goal, in many cases such as with DQN (as we will discuss later),
 \label{sec:dqn}
 The Deep Q-Learning (DQN) \cite{mnih2013playing, mnih2015human} algorithm introduces a novel method to train q-learning algorithms with neural network using high-dimensional partially-observable state spaces (e.g. pixels), effectively addressing two important problems for training deep neural networks in RL, which are the highly-correlated states and non-stationary distribution issues. The RL by nature will be a temporal sequential process, which produces highly-correlated states, and additionally; the data distribution will evolves as the algorithm learns new behaviors, which is called a non-stationary distribution. If we look to these two situations from a supervised learning perspective, they made complicated the training because a supervised learning requires identical independent distributed data. To address both of these issues, DQN introduces what is called Experience Replay (ER), which facilitates breaking temporal data correlations, leading to approximate independent and identically distributed (iid) data distributions.
 
-The \textbf{experience replay} (ER) works as a type of dataset with a \textbf{fixed capacity} $N$, storing tuples of experiences from the agent's interactions with the environment at different time steps during training (see Figure \ref{}), represented as
+% NO image for experience replay (see Figure \ref{})
+The \textbf{experience replay} (ER) works as a type of dataset with a \textbf{fixed capacity} $N$, storing tuples of experiences from the agent's interactions with the environment at different time steps during training, represented as
 $$e_t = (s_t, a_t, r_t, s_{t+1}), \quad e_t \in \mathcal{E}$$
 
 In some scenarios, it is even possible to include a variable discount factor for each experience, such as $e_t = (s_t, a_t, r_t, \gamma_t, s_{t+1})$.
@@ -189,7 +190,7 @@ The complete algorithm is presented in Algorithm \ref{algorithm:dqn}. Note that 
 % \end{algorithmic}
 % \end{algorithm}
 
-\begin{algorithm}
+\begin{algorithm}[h]
 \caption{Deep Q-learning with Experience Replay (Mnih et al. \cite{mnih2013playing, mnih2015human})}
 \label{algorithm:dqn}
 \begin{algorithmic}[1]
@@ -221,7 +222,7 @@ The complete algorithm is presented in Algorithm \ref{algorithm:dqn}. Note that 
 
 \subsection{Prioritized Experience Replay}
 \label{sec:per}
-Schaul et al. \cite{schaul2015prioritized} explored the limitations of experience replay and discovered that a DQN algorithm revisits the same experience tuple an average of eight times, with not all revisits leading to significant improvements. As a result, they proposed Prioritized Experience Replay (PER), which non-uniformly samples experiences from the replay buffer based on a priority measure. While they left room for exploring other potential priority measures, they hypothesized that TD-error could serve as an indicator of expected learning progress. By using TD-error as a priority measure, they aimed to more frequently replay experiences that are likely to result in greater improvements.
+Schaul et al. \cite{schaul2015prioritized} explored the limitations of experience replay and discovered that a DQN algorithm revisits the same experience tuple an average of eight times, with not all revisits leading to significant improvements. As a result, they proposed Prioritized Experience Replay (PER), which non-uniformly samples experiences from the replay buffer based on a priority measure. While they left room for exploring other potential priority measures, they hypothesized that TD-error could serve as an indicator of expected learning progress. According to Schaul et al. \cite{schaul2015prioritized}, the \textbf{Expected Learning Progress} (ELP) is the idealised criterion to assign a priority value with the amount the RL agent can learn from a transition in its current state. By using TD-error as a priority measure, they aimed to more frequently replay experiences that are likely to result in those greater improvements.
 
 Specifically, the sampling probability $P(i)$ of an experience tuple $e_i$ will be given by
 
@@ -262,7 +263,7 @@ Algorithm \ref{algorithm:dqn_per} showcases the whole prioritizing process and t
 % 8 Ver si incluyo la prueba teorica
 % Y aplicar a trabajos
 
-\begin{algorithm}
+\begin{algorithm}[h]
 \caption{DQN with Prioritized Experience Replay (PER) (Schaul et al. \cite{schaul2015prioritized})}
 \label{algorithm:dqn_per}
 \begin{algorithmic}[1]
@@ -299,7 +300,7 @@ Algorithm \ref{algorithm:dqn_per} showcases the whole prioritizing process and t
 \section{Bisimulation}
 \label{sec:bisimulation_background}
 
-Several notions of behavioral similarity between states in MDPs have been explored in the RL literature. In this work, we are interested in the bisimulation concept. We are going to walk through the main bisimulation definitions used in the work later.
+Several notions of behavioral similarity between states in MDPs have been explored in the RL literature. In this work, we are interested in the bisimulation concept. We are going to walk through the main bisimulation definitions used in the work.
 
 % We are going to walk through the understanding of these topics by introducing some preliminaries, and explain the main bisimulation definition used in the work later.
 
@@ -370,11 +371,14 @@ Two states $x, y \in S$ are \textbf{bisimilar} if there exists a bisimulation re
 
 The properties in Equations \ref{eq:reward_equivalence} and \ref{eq:transition_equivalence} are referred to as \textbf{Reward Equivalence} and \textbf{Transition Equivalence}, respectively. There can be various equivalence relations that satisfy these conditions, but in most cases, we are interested in the largest equivalence relation, denoted by $\sim$ \footnote{The smallest bisimulation relation is the identity relation, which is a trivial solution where each equivalence class contains only a single state.}.
 
-Intuitively, a bisimulation of a transition system allows us to replace a complex system with a simpler system that has fewer states while still capturing the same behavior as the original (see Figure \ref{}).
+Intuitively, a bisimulation of a transition system allows us to replace a complex system with a simpler system that has fewer states while still capturing the same behavior as the original.
+%(see Figure \ref{}).
 
 \subsection{On-policy bisimulation}
 
-The strong behavioral guarantees of the aforementioned bisimulation relations can potentially hinder their applicability for RL algorithms. This is because they strictly require exact action matching between states, which can be highly challenging to achieve in complex environments (as it will be illustrated in detail later with an example in Section \ref{}). Additionally, there may be actions that do not lead to positive outcomes, but the equivalence conditions will still require proper matching between them. For example, in some environments (see Figure \ref{}), even when states exhibit similar optimal values, $V^*(x) = V^*(y)$, they may not satisfy the equivalence properties.
+The strong behavioral guarantees of the aforementioned bisimulation relations can potentially hinder their applicability for RL algorithms. This is because they strictly require exact action matching between states, which can be highly challenging to achieve in complex environments (as it will be illustrated in detail later with an example in Section \ref{sec:motivating_example}). Additionally, there may be actions that do not lead to positive outcomes, but the equivalence conditions will still require proper matching between them. For example, in some environments, even when states exhibit similar optimal values, $V^*(x) = V^*(y)$, they may not satisfy the equivalence properties.
+
+%(see Figure \ref{}), even when states exhibit similar optimal values, $V^*(x) = V^*(y)$, they may not satisfy the equivalence properties.
 
 Under these circumstances, Castro's work \cite{castro2020scalable} proposes an \textbf{on-policy bisimulation relation}, which, instead of looking to all actions matching, \textit{focus only on the current policy actions}. This approach aligns better with what RL algorithm does, where commonly is of interest to keep a behavioral current policy which is updated iteratively as the learning progress; allowing to focus over time only on the transitions of interest (not in transition that does not lead to large values, which is an improper way to account for behaviors).
 
