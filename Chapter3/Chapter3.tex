@@ -4,7 +4,7 @@
 
 \section{Non-Uniform Sampling Experience Replays}
 
-Prioritized Experience Replay (PER) \cite{schaul2015prioritized} is by far the most relevant non-uniform sampling method, which samples visited experiences proportional to the absolute TD errors, thereby efficiently reducing convergence time. However, following these promising results, numerous attempts have been made to further improve and refine non-uniform sampling to address various challenges, such as sparse reward assignment \cite{andrychowicz2017hindsight, dai2021diversity}, experience retention \cite{de2018experience}, the bias-variance trade-off \cite{fedus2020revisiting, hessel2018rainbow, sutton1988learning, sutton2018reinforcement}, and trajectory sampling \cite{dai2021diversity, liu2023prioritized}. The wide variety of approaches can make it complex and unclear to differentiate between distinct and complementary methods. The following proposed categorization aims to capture the main nuances of these methodologies and provide guidelines for exploring the current experience replay methods in the literature. The categorization is as follows: Priority Substitution, Priority Reweighting, and Auxiliary Learnable Mechanisms.
+Prioritized Experience Replay (PER) \cite{schaul2015prioritized} is by far the most relevant non-uniform sampling method, which samples visited experiences proportional to the absolute TD errors, thereby efficiently reducing convergence time. However, following these promising results, numerous attempts have been made to further improve and refine non-uniform sampling to address various challenges, such as sparse reward assignment \cite{andrychowicz2017hindsight, dai2021diversity}, experience retention \cite{de2018experience}, the bias-variance trade-off \cite{fedus2020revisiting, hessel2018rainbow, sutton1988learning, sutton2018reinforcement}, trajectory sampling \cite{dai2021diversity, liu2023prioritized}, among others. The wide variety of approaches can make it complex and unclear to differentiate between distinct and complementary methods. The following proposed categorization aims to capture the main nuances of these methodologies and provide guidelines for exploring the current experience replay methods in the literature. The categorization is as follows: Priority Substitution, Priority Reweighting, and Auxiliary Learnable Mechanisms.
 
 \subsection{Priority Substitution}
 
@@ -31,38 +31,36 @@ Recent works have explored the use of \textbf{trajectories} for both experience 
 %In contrast, our method, while not directly handling trajectories for learning, is capable of approximating the behavior of the implicit MDP governing a given environment, allowing us to overlook trajectories. However, our method is not constrained to single-step transitions and could potentially incorporate trajectories in future work.
 
 
+
 % I'm here
 
 \subsection{Priority Reweighting}
 
 Reweighting-based non-uniform sampling methods modify the priority definition by reweighting the TD-error in some manner, while still preserving the core concept of assigning a priority to each element in the experience replay.
 
-Kumar et al. \cite{kumar2020discor}  propose a corrective feedback method, reweighing samples by adjusting the TD-error target value with an estimated target value error, mitigating error accumulation. 
+Kumar et al. \cite{kumar2020discor} propose a corrective feedback method, reweighing samples by adjusting the TD-error target value with an estimated target value error, mitigating error accumulation. Their method, called DisCor, outperforms in various RL scenarios, such us Atari bechmark, maniputation tasks, and multi-task RL, and can easily be integrated in other valued-based algorithms. Consequently, Liu et al. \cite{liu2021regret} provided theoretical explanation for PER and DisCor methods, and proposed an optimal prioritization strategy based on regret minimization, indicating transitions with higher hindsight TD error should be prioritized. Their method ReMERT exploits temporal state ordering, showing outperforming results in RL benchmarks such as MuJoCo, Atari, and Meta-world. Concurrently, SUNRISE \cite{lee2021sunrise} reweighs target Q-values based on uncertainty estimates from a Q-ensemble, improving signal-to-noise in Q-updates and stabilizing learning. Their method was integrated in off-policy RL algorithms, such us SAC and Rainbow DQN, consistently, outperforming the state-of-the-art results. Lastly, Sinha et al. \cite{sinha2022experience} introduced a method that reweights priorities by the likelihood-free density ratio between on-policy and off-policy experiences. This method focuses on maintaining a diverse set of experiences in the replay buffer by ensuring that experiences are sampled from low-density regions of the state space. While their method is only applied to actor-critic methods, their results show promising results in 12 relevant Atari games, and 6 Deepmind control suite tasks.
 
-Sun et al. \cite{sun2020attentive} propose Attention Experience Replay (AER), implicitly assigning high priorities to transitions containing frequently visited states. 
+% 12 Atari environments and 6 tasks from the DeepMind control suite. We achieve superior sample complexity on 9 out of 12 Atari environments and 16 out of 24 method-task combinations for DCS compared to the best baselines
 
-Liu et al. \cite{liu2021regret} propose an optimal prioritization strategy based on regret minimization, indicating transitions with higher hindsight TD error should be prioritized. This work implements two methods: ReMERN, learning an error network to assign priorities, and ReMERT, exploiting temporal state ordering without an additional neural network. Concurrently, SUNRISE \cite{lee2021sunrise} reweighs target Q-values based on uncertainty estimates from a Q-ensemble, improving signal-to-noise in Q-updates and stabilizing learning. 
+% Likelihood-free Importance Weighting: Sinha et al. (2022) introduced a method that reweights priorities by estimating the likelihood-free density ratio between on-policy and off-policy experiences.
 
-Lastly, Sinha et al. \cite{sinha2022experience}  propose a reweighing technique, reassigning priorities by the likelihood-free density ratio between on-policy and off-policy experiences.
-
-
-Density-based Prioritization: This method focuses on maintaining a diverse set of experiences in the replay buffer by ensuring that experiences are sampled from low-density regions of the state space. This helps in covering the state space more uniformly.
-
-Likelihood-free Importance Weighting: Sinha et al. (2022) introduced a method that reweights priorities by estimating the likelihood-free density ratio between on-policy and off-policy experiences.
-
+%Along side this work, Sun et al. \cite{sun2020attentive} propose Attentive Experience Replay (AER), implicitly assigning high priorities to transitions containing frequently visited states. 
 
 \subsection{Auxiliary Mechanism}
 % \subsection{Model-based Sampling}
 
 Auxiliary mechanisms can be integrated with non-uniform sampling methods to modify the sampling procedure and reduce dependence on priority, without necessarily preserving to the core concept of assigning a priority to each element in the experience replay
 
-Zha et al. \cite{zha2019experience} include an additional replay policy learned to filter irrelevant experiences and use priorities only on relevant ones.
-
-Similarly, Pan et al. \cite{pan2022understanding} propose a model-based Stochastic Gradient Langevin Dynamics (SGLD) sampling method, producing hypothetical experiences using the current policy and concatenating them with uniformly sampled experiences from an ER. SGLD addresses outdated priorities and insufficient sample space coverage.
+Zha et al. \cite{zha2019experience} included an additional replay policy learned to filter irrelevant experiences and use priorities only on relevant ones. Consequently, in the same work of Liu et al. \cite{liu2021regret}, they proposed an additional method ReMERN based on an error network to assign priorities. By learning a task-specific neural network, this method guarantees more robustness along different environments, addressing different sources of randomness compare with the ReMERT alternative. Later, Pan et al. \cite{pan2022understanding} propose a model-based Stochastic Gradient Langevin Dynamics (SGLD) sampling method, producing hypothetical experiences using the current policy and concatenating them with uniformly sampled experiences from an ER. SGLD addresses outdated priorities and insufficient sample space coverage. Finally, Zhao and Tresp \cite{zhao2019curiosity} introduced a Curiosity-driven Experience Prioritization mechanism, using an auxiliary curiosity module to encourage over-sample trajectories with rare achieved goal states, leading to more efficient exploration and exploitation balance. The method can be integrated with any off-policy RL algorithm, and was tested on six robot manipulation tasks outperforming sampled-efficiency and final performance.
 
 %In contrast, by learning abstractions, our method does not require an additional replay policy learning, complex world model, or hypothetical state tracking. Instead, our method reduces training complexity by learning lower-dimensional state representations, which are organized by behavioral quality in a latent space.
 
-Our work aligns with methods that reweigh priorities but also includes an auxiliary mechanism to calculate bisimulation metrics. Specifically, our method implicitly learns a bisimulation (and bisimulation metric) by learning state abstractions with an encoder neural network. This network is updated with an objective loss function, which encourages to keep behaviorally similar states closer together and behaviorally dissimilar states farther apart in a latent space. The bisimulation metric defines a behavioral similarity distance, which will be used to reweigh priorities, encouraging more diverse sampling.
+Our work aligns with methods that reweigh priorities but also includes an auxiliary mechanism to calculate bisimulation metrics. Specifically, our method learns to approximated a bisimulation metric by learning state abstractions with an encoder neural network. This network is updated with an objective loss function, which encourages to keep behaviorally similar states closer together and behaviorally dissimilar states farther apart in a latent space. The bisimulation metric defines a behavioral similarity distance, which will be used to reweigh priorities by trading off between TD-error and bisimulation distance, encouraging more diverse sampling.
+
+% Additionally, our approach employs single-step targets and does not require hand-enginering proxies.
+
+% does not impose any constraints on the use of n-step targets for both Q-learning and priority, and they can be incorporated to further enhance the performance of a DQN algorithm.
+% hand-engineering proxies.
 
 % \section{Bisimulation Metrics}
 
@@ -75,7 +73,7 @@ Our work aligns with methods that reweigh priorities but also includes an auxili
 
 % In RL, there have been a lot of breakthrough successes including learning to play a diverse set of video games from raw pixels and outperform human performance \cite{mnih2013playing, mnih2015human}, continuous control tasks such as controlling a simulated car from a dashboard camera (Lillicrap et al., 2015) and subsequent algorithmic developments and applications to agents that successfully navigate mazes and solve complex tasks from first-person camera observations (Jaderberg et al., 2016; Espeholt et al., 2018; Jaderberg et al., 2019); and robots that successfully grasp objects in the real world (Kalashnikov et al., 2018).
 
-Reinforcement Learning is a well-studied topic in the machine learning, with multiple success and diverse applications, such as ...... Nonetheless, there are still certain challenges in practice that have been widely studied. Particularly, the \textbf{sample-inefficient problem}, which refers to the large amount of data (experiences) required to learn a feasible policy, is of interest for this current work. 
+Reinforcement Learning is a well-studied topic in the machine learning, with multiple success and diverse applications. Nonetheless, there are still certain challenges in practice that have been widely studied. Particularly, the \textbf{sample-inefficient problem}, which refers to the large amount of data (experiences) required to learn a feasible policy, is of interest for this current work. 
 
 According to works from Lake et al. \cite{lake2017building}, Kaiser et al. \cite{kaiser2019model}, and Laskin et al. \cite{laskin2020curl}, it has been empirically demonstrated that learning from high-dimensional observations such as raw pixel is sample-inefficient. In fact, more concise observations based on state-based features makes the learning of policies less computational intensive and sample-efficient than learning from pixels \cite{tassa2018deepmind}. According to Laskin et al. \cite{laskin2020curl}, it is feasible extract the relevant state information (e.g. state-based features) from pixel data, as long as this information is present in the raw data, making viable the learning of policies. Then, the only dilemma is to contextualize an adequate method to extract (or learn) those representations. 
 

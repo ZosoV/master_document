@@ -4,7 +4,14 @@
 
 \section{Reinforcement Learning}
 
-Reinforcement Learning (RL) \cite{sutton2018reinforcement} is an artificial intelligence learning paradigm, which, along with supervised and unsupervised learning, constitutes one of the three main approaches in machine learning. What distinguishes Reinforcement Learning from other approaches is that the learning occurs through a trial-and-error process, where an \textbf{agent} receives \textbf{reward} signals (positive or negative) from an \textbf{environment}, leading to a focus on maximizing long-term positive rewards. The key elements, the agent and the environment, interact iteratively: the agent observes the state of the environment, takes an action accordingly, and receives a reward along with the next state from the environment (see Figure \ref{}). The primary goal of an RL agent is to maximize the cumulative reward, also known as the \textbf{return}. In this section, we will formally define these concepts.
+Reinforcement Learning (RL) \cite{sutton2018reinforcement} is an artificial intelligence learning paradigm, which, along with supervised and unsupervised learning, constitutes one of the three main approaches in machine learning. What distinguishes Reinforcement Learning from other approaches is that the learning occurs through a trial-and-error process, where an \textbf{agent} receives \textbf{reward} signals (positive or negative) from an \textbf{environment}, leading to a focus on maximizing long-term positive rewards. The key elements, the agent and the environment, interact iteratively: the agent observes the state of the environment, takes an action accordingly, and receives a reward along with the next state from the environment (see Figure \ref{fig:rl_loop}). The primary goal of an RL agent is to maximize the cumulative reward, also known as the \textbf{return}. In this section, we will formally define these concepts.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/rl_loop.jpg}
+    \caption[Reinforcement Learning Loop]{\textbf{Reinforcement Learning Loop.} TODO}
+    \label{fig:rl_loop}
+\end{figure}
 
 % MDPs
 \subsection{Markov Decision Process (MDP)}
@@ -20,7 +27,19 @@ Reinforcement Learning (RL) \cite{sutton2018reinforcement} is an artificial inte
     \item and $\gamma \in [0, 1)$ is a discount factor.
 \end{itemize}
 
-For reference, a MDP can be visualized as a graph, as shown in Figure \ref{}, where the interaction between all components is illustrated. Intuitively, the reinforcement learning (RL) loop depicted in Figure \ref{} can be understood as a trial-and-error process that induces an MDP. For instance, if the states are represented by image frames from a simulator, the corresponding MDP would be described by \ref{}. A MDP intuitively could be understood as the environment, while the agent decision-making mechanism is defined by a policy.
+For reference, a MDP can be visualized as a graph, as shown in Figure \ref{fig:mdp}, where the interaction between all components is illustrated. A MDP intuitively could be understood as the environment, while the agent decision-making mechanism is defined by a policy, which induces a Markov Chain on top of a MDP.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/mdp.jpg}
+    \caption[Markov Decision Process]{\textbf{Markov Decision Process.} TODO}
+    \label{fig:mdp}
+\end{figure}
+
+
+%Intuitively, the reinforcement learning (RL) loop depicted in Figure \ref{fig:rl_loop} can be understood as a trial-and-error process that induces an MDP. 
+
+% For instance, if the states are represented by image frames from a simulator, the corresponding MDP would be described by \ref{}.
 
 A \textbf{policy} $\pi \in \mathcal{P}(\mathcal{A})^\mathcal{S}$ is a mapping from states to distributions over actions (or just actions for deterministic policies), describing the agent actions in a given state. An stochastic policy is defined as
 \begin{equation}
@@ -33,7 +52,7 @@ a_t = \pi(s_t)
 
 \subsection{Trajectories, Return, and Value Functions}
 
-The iterative interaction of an agent in the environment (see Figure \ref{}) is depicted in a \textbf{trajectory}\footnote{The trajectory, return and value functions explanations were based on \href{https://spinningup.openai.com/en/latest/spinningup/rl_intro.html}{OpenAI Spinning Up}} (also called rollout or \textbf{episode}), which is a sequence of states and actions.
+The iterative interaction of an agent in the environment (see Figure \ref{fig:mdp}) is depicted in a \textbf{trajectory}\footnote{The trajectory, return and value functions explanations were based on \href{https://spinningup.openai.com/en/latest/spinningup/rl_intro.html}{OpenAI Spinning Up}} (also called rollout or \textbf{episode}), which is a sequence of states and actions.
 $$\tau = (s_0, a_0, s_1, a_1, \dots )$$
 
 where a \textbf{transition} is what happen between state $s_t$ and state $s_{t+1}$, in a deterministic transition as 
@@ -149,7 +168,7 @@ It is relevant to notice some considerations when using this loss function such 
     \end{equation}
     
     Typically, this epsilon value is annealed over iterations to maintain a small value as learning approaches convergence.
-    \item When learning from pixels, multiple frames $n$ are typically \textbf{stacked together} to represent a state in a preprocessing step. Additionally, the same action can be repeated over the $n$ stacked frames using a method called \textbf{skip frames} to reduce the training load. Thus, a state will be represented by $s_{t+1} = \phi(\{x_{t-n}, x_{t-(n-1)}, \cdots, x_{t}\})$, where the function $\phi$ stacks a window of $n$ frames (commonly $n=4$) while repeating the same action. For simplicity, we will refer to states in the algorithm and not the preprocessing function, but it is important to remind the reader that stacking and skip frames are used in the state preparation process.
+    \item When learning from pixels, multiple frames $n$ are typically \textbf{stacked together} to represent a state in a preprocessing step. Additionally, the same action can be repeated over the $n$ stacked frames using a method called \textbf{skip frames} to reduce the training load. Thus, a state will be represented by $s_{t} = \phi(\{x_{t-n}, x_{t-(n-1)}, \cdots, x_{t}\})$, where the function $\phi$ stacks a window of $n$ frames (commonly $n=4$) while repeating the same action. For simplicity, we will refer to states in the algorithm and not the preprocessing function, but it is important to remind the reader that stacking and skip frames are used in the state preparation process.
 \end{itemize}
 
 The complete algorithm is presented in Algorithm \ref{algorithm:dqn}. Note that the algorithm has been slightly modified from the one in Mnih et al.'s work \cite{mnih2013playing, mnih2015human} to run for a total budget of $T$ (total number of steps in the entire training) rather than running it per episode. This helps to make an easier and fair comparison with other extension of the algorithmn.
