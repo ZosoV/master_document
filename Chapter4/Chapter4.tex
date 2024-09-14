@@ -141,14 +141,15 @@ In the current work, we are interested in exploring these behaviors in terms of 
 
 %\subsection{On-policy MICO metric justification}
 \section{Bisimulation Prioritized Experience Replay}
+\label{sec:bper_method}
 
-The previous example provides a method to calculate the on-policy bisimulation metric in deterministic MDPs and environments with few states. However, in practice, we often encounter more complex environments with high-dimensional representations (e.g., pixels), where calculating on-policy bisimulation metrics in a tabular form becomes intractable.
+%The previous example provides a method to calculate the on-policy bisimulation metric in deterministic MDPs and environments with few states. However, in practice, we often encounter more complex environments with high-dimensional representations (e.g., pixels), where calculating on-policy bisimulation metrics in a tabular form becomes intractable.
 
-To address these challenges, we employ an indirect approach to approximate these bisimulation metrics within the RL loop. Specifically, works by Zhang et al. \cite{zhang2020learning} and Castro et al. \cite{castro2021mico} have demonstrated that it is more effective and general to obtain a bisimulation metric as part of the online learning of state abstractions. In the following, we will detail the specific method for learning these abstractions and how this approach allows us to approximate the metric on the fly.
+Complex environments with high-dimensional representations (e.g., pixels) make the estimation of on-policy bisimulation metrics in a tabular form intractable. To address this challenge, we employ an indirect approach to approximate the bisimulation distances within the RL loop. Specifically, works by Zhang et al. \cite{zhang2020learning} and Castro et al. \cite{castro2021mico} have demonstrated that it is more effective and general to obtain a bisimulation metric as part of the online learning of state abstractions. In the following sections, we will describe the specific method for learning these abstractions and how this approach enables us to approximate the metric and utilize it for prioritization on the fly.
 
 \subsection{Learning State Abstractions}
 
-The present work employs a surrogate on-policy bisimulation metric known as the MICO metric \cite{castro2021mico} (see Definition \ref{def:mico_operator}). The MICo metric substitutes the Kantorovich distance $\mathcal{W}_d$ calculation with the independent coupling. For reference, we restate the operator equation here:
+The present work employs a surrogate on-policy bisimulation metric known as the MICO metric \cite{castro2021mico} (see Definition \ref{def:mico_operator}), where the Kantorovich distance $\mathcal{W}_d$ calculation is substituted with the independent coupling. For reference, we restate the operator equation here:
 $$
 \label{eq:mico_operator}
     T^\pi_M(U)(x, y) = |r^\pi_{x} - r^\pi_{y}| + \gamma \mathbb{E}_{x'\sim P_x^\pi, y'\sim P_y^\pi}\left[U(x',y') \right]
@@ -156,7 +157,7 @@ $$
 
 % , where the first term corresponds to the reward equivalence difference, and the second corresponds to the independent coupling.
 
-The MICo operator is used to learn a parameterized state abstraction \(\phi_\omega(x) : \mathcal{S} \to \mathcal{S}_\phi\) (parameterized by \(\omega\)), which maps a true environmental state (e.g., pixels) to a lower-dimensional latent representation. The goal is to position these representations in such a way that a chosen parameterized distance $U_\omega(x,y)$ (e.g., Euclidean, cosine) coincides with the MICo distance in the latent space (see Figure \ref{fig:latent_space}). However, since the MICo distance is a diffuse metric (see Definition \ref{def:diffuse_metric}), the parameterized distance must ensure positive self-distances. To achieve this, the following parameterized distance function was proposed in \cite{castro2021mico} for any \(x, y \in \mathcal{S}\):
+This MICo operator is used to learn a parameterized state abstraction \(\phi_\omega(x) : \mathcal{S} \to \mathcal{S}_\phi\) (parameterized by \(\omega\)), which maps a true environmental state (e.g., pixels) to a lower-dimensional latent representation. The goal is to position these representations in such a way that a chosen parameterized distance $U_\omega(x,y)$ (e.g., Euclidean, cosine) coincides with the MICo distance in the latent space (see Figure \ref{fig:latent_space}). Since the MICo distance is a diffuse metric (see Definition \ref{def:diffuse_metric}), the parameterized distance must ensure positive self-distances. To achieve this, the following parameterized distance function was proposed in \cite{castro2021mico} for any \(x, y \in \mathcal{S}\):
 \begin{equation}
     U^\pi(x, y) \approx U_\omega(x, y):=\frac{\left\|\phi_\omega(x)\right\|_2^2+\left\|\phi_\omega(y)\right\|_2^2}{2}+\beta \theta\left(\phi_\omega(x), \phi_\omega(y)\right)
 \end{equation}
@@ -256,7 +257,7 @@ Although the current states from different transitions are not directly connecte
 
 %Figure \ref{} illustrates how the initial states of all transitions in the minibatch are positioned in the latent space, with more behaviorally distinct states placed farther apart.
 
-Algorithm \ref{algorithm:dqn_bper} illustrates the entire prioritizing process. Similar to the PER method the priorities are only updated for the current sampled mini batch to maintain computational efficiency. Notice the algorithm depicts the procedure for Strategy 1 (BPERcn). Strategy 2 (BPERaa) requires a minor replacement in line 19, where \(U_\omega(s_i, s_{i+1})\) should be replaced with \(U^B_\omega(s_i)\). An additional algorithm illustrating only MICo learning with DQN, without BPER, is provided in Appendix \ref{} for reference.
+Algorithm \ref{algorithm:dqn_bper} illustrates the entire prioritizing process. Similar to the PER method the priorities are only updated for the current sampled mini batch to maintain computational efficiency. Notice the algorithm depicts the procedure for Strategy 1 (BPERcn). Strategy 2 (BPERaa) requires a minor replacement in line 19, where \(U_\omega(s_i, s_{i+1})\) should be replaced with \(U^B_\omega(s_i)\). An additional algorithm illustrating only MICo learning with DQN, without BPER, is provided in Appendix \ref{append:dqn_mico} for reference.
 
 \begin{algorithm}[h]
 \caption{DQN with Bisimulation Prioritized Experience Replay (BPERcn)}

@@ -1,6 +1,7 @@
 % !TEX root =  ../Dissertation.tex
 
 \chapter{Conclusion and Future Work}
+\label{sec:conclusion_future_work}
 
 \section{Conclusion}
 In this work, we proposed a non-uniform sampling technique to sample transitions from an experience replay, named Bisimulation Prioritized Experience Replay (BPER) along with two strategies: current-vs-next (BPERcn) and all-vs-all (BPERaa). The priorities are assigned based on a surrogate on-policy bisimulation, called MICo metric, that is used to encourage sampling transitions with more behavioral dissimilar states (promoting data diversity). The MICo metric is estimated as part of the learning of state abstractions. The proposed bisimulation-based prioritization technique shows promising results, demonstrating strong performance in a GridWorld environment used to validate the effectiveness of the method.
